@@ -13,6 +13,7 @@
   almeno la TX + 20 s con il Parrot): l'ascolto del Parrot finisce in tempo per i due riavvii, la pausa senza Parrot
   arriva al minuto. L'ora passa i riavvii nella RAM RTC con il contatore RTC solo per la durata del riavvio (errore
   misurato < 50 ms). Ora del QSO nel log e nella pagina, `hh:mmZ` nella riga di telemetria.
+- **Pagina web in ceco** (12 lingue): scelta automatica dalla lingua del browser.
 - **`SET wifi ON|OFF`:** access point all'accensione (predefinito ON, nel byte prima riservato: nessuna migrazione).
   Spento: configurazione solo via USB e nessun riavvio prima della TX; BOOT in configurazione lo accende fino al
   riavvio.

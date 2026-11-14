@@ -1200,8 +1200,12 @@ static void handle_cmd(char *line)
         if (frames < 1 || frames > 1000) { printf("ERR fotogrammi 1..1000\n"); return; }
         pdx_cam_bench(atoi(argv[1]), atoi(argv[2]), frames, atoi(argv[4]), atoi(argv[5]));
 
-    } else {
-        printf("ERR comando sconosciuto\n");
+    } else {                                                  /* con il testo ricevuto: byte estranei in esadecimale */
+        char shown[48];
+        size_t o = 0;
+        for (const unsigned char *q = (const unsigned char *)argv[0]; *q && o + 5 < sizeof(shown); q++)
+            o += (size_t)snprintf(shown + o, sizeof(shown) - o, *q >= 32 && *q < 127 ? "%c" : "<%02X>", *q);
+        printf("ERR comando sconosciuto: %s\n", shown);
     }
 }
 

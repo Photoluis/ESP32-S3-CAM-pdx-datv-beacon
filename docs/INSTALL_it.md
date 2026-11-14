@@ -112,7 +112,7 @@ Monoscopio e sfondi si scrivono come sopra (`--port /dev/ttyACM0`).
 
 1. Dopo **RST** la scheda accende l'access point di configurazione: rete **`NOCALL-BEACON`**, password
    **`beacon13cm`**.
-2. Aprite **http://192.168.4.1** (11 lingue).
+2. Aprite **http://192.168.4.1** (12 lingue).
 3. Impostate **il vostro nominativo** (QRZ), il **QTH locator** (es. `JN80PS`, dalla v1.1.0), frequenza, FEC, livello e ciclo,
    poi **Applica e salva**.
 4. Cambiate la password del Wi-Fi dal menu (il nome della rete diventa `<NOMINATIVO>-BEACON`).
@@ -124,7 +124,9 @@ La stessa pagina del Wi-Fi funziona anche dal cavo USB, con il **log in tempo re
 **https://photoluis.github.io/Esp32s3-cam-pdx-datv-beacon/config/** (Chrome o Edge su computer, Web Serial).
 
 - Premete **Connetti** e scegliete la porta (CH340 sulla ESP32-S3-CAM, `USB JTAG/serial debug unit` sulla XIAO). La
-  scheda non si resetta.
+  scheda non si resetta. Se sulla XIAO il log mostra *The device has been lost* (succede dopo che un altro programma,
+  es. esptool o un terminale seriale, ha usato la porta), premete **RST** sulla scheda e riconnettete, senza altri
+  programmi sulla porta.
 - La pagina **ascolta soltanto** finché il log non mostra che la scheda è in configurazione: ogni carattere inviato
   ferma la TX, come un tasto nel terminale. Se la scheda sta già trasmettendo, **Leggi configurazione** la ferma (la
   scheda riparte in configurazione e la pagina carica i valori da sola).

@@ -111,7 +111,7 @@ Test card and backgrounds are written as above (`--port /dev/ttyACM0`).
 
 1. After **RST** the board starts the configuration access point: Wi-Fi **`NOCALL-BEACON`**, password
    **`beacon13cm`**.
-2. Open **http://192.168.4.1** (11 languages).
+2. Open **http://192.168.4.1** (12 languages).
 3. Set **your callsign** (QRZ), **QTH locator** (e.g. `JN80PS`, from v1.1.0), frequency, FEC, level and the cycle, then
    **Apply and save**.
 4. Change the Wi-Fi password in the menu (the network name becomes `<CALLSIGN>-BEACON`).
@@ -123,7 +123,9 @@ The same page as the Wi-Fi one also works over the USB cable, with the **live lo
 **https://photoluis.github.io/Esp32s3-cam-pdx-datv-beacon/config/** (Chrome or Edge on a computer, Web Serial).
 
 - Press **Connect** and choose the port (CH340 on the ESP32-S3-CAM, `USB JTAG/serial debug unit` on the XIAO). The
-  board is not reset.
+  board is not reset. If the log shows *The device has been lost* on the XIAO (it happens after another program,
+  e.g. esptool or a serial terminal, has used the port), press **RST** on the board and connect again, with no other
+  program on the port.
 - The page **only listens** until the log shows that the board is in configuration mode: any character sent stops the
   TX, exactly like a key in a terminal. If the board is already transmitting, **Read configuration** stops it (the
   board then restarts in configuration mode and the page loads the values by itself).

@@ -171,8 +171,9 @@ nl:'<svg viewBox="0 0 9 6"><path fill="#ae1c28" d="M0 0h9v2H0z"/><path fill="#ff
 pl:'<svg viewBox="0 0 8 5"><path fill="#fff" d="M0 0h8v2.5H0z"/><path fill="#dc143c" d="M0 2.5h8V5H0z"/></svg>',
 el:'<svg viewBox="0 0 27 18"><path fill="#0d5eaf" d="M0 0h27v18H0z"/><path stroke="#fff" stroke-width="2" d="M0 3h27M0 7h27M0 11h27M0 15h27"/><path fill="#0d5eaf" d="M0 0h10v10H0z"/><path stroke="#fff" stroke-width="2" d="M5 0v10M0 5h10"/></svg>',
 ja:'<svg viewBox="0 0 3 2"><path fill="#fff" d="M0 0h3v2H0z"/><circle cx="1.5" cy="1" r=".6" fill="#bc002d"/></svg>',
+cs:'<svg viewBox="0 0 6 4"><path fill="#fff" d="M0 0h6v2H0z"/><path fill="#d7141a" d="M0 2h6v2H0z"/><path fill="#11457e" d="M0 0l3 2-3 2z"/></svg>',
 ar:'<svg viewBox="0 0 12 6"><path fill="#00732f" d="M0 0h12v2H0z"/><path fill="#fff" d="M0 2h12v2H0z"/><path d="M0 4h12v2H0z"/><path fill="#f00" d="M0 0h3v6H0z"/></svg>'};
-const NAMES={it:'Italiano',en:'English',de:'Deutsch',es:'Español',fr:'Français',pt:'Português',nl:'Nederlands',pl:'Polski',el:'Ελληνικά',ja:'日本語',ar:'العربية'};
+const NAMES={it:'Italiano',en:'English',de:'Deutsch',es:'Español',fr:'Français',pt:'Português',nl:'Nederlands',pl:'Polski',el:'Ελληνικά',ja:'日本語',cs:'Čeština',ar:'العربية'};
 const T={
 it:{s_sched:"Schema del ciclo",sc_boot:"All'accensione: attesa {s} s con l'access point acceso, poi il ciclo parte da solo",sc_manual:"Partenza manuale (AVVIA BEACON), poi il ciclo si ripete",sc_empty:"Niente da trasmettere: monoscopio e camera a 0 s",sc_mono:"MONOSCOPIO",sc_cam:"CAMERA",sc_pause:"PAUSA",sc_listen:"ASCOLTO PARROT",sc_cycle:"un ciclo = {s} s, poi si ripete",sc_ratio:"TX {tx}% del tempo · {k} {p}%",sc_idle:"attesa",sc_heard:"segnale",sc_wait:"attesa",sc_cap:"cattura",sc_dec:"decodifica",sc_reply:"RISPOSTA",sc_qso:"Se nella pausa arriva un DVB-S2:",sc_after:"poi riavvio e il ciclo riprende",sc_how:"Per un QSO: trasmetti su <b>{f} MHz</b> (SR fino a 500 kS) mentre il LED è verde, per almeno <b>{n} s</b>; poi passa in ricezione: la risposta arriva circa <b>{r} s</b> dopo l'inizio della tua TX.",sc_short:"Pausa corta: per ascoltare con calma servono almeno {n} s.",s_parrot:"Parrot (risposta automatica)",parrot:"Parrot acceso: nelle pause del ciclo ascolta sulla propria frequenza",preply:"Durata della risposta (s, 10–250)",pstab:"Attesa prima della cattura (s, 0–30)",qso:"Ultimo QSO:",noqso:"nessuno",parrot_note:"Nelle pause il beacon ascolta: se riceve un DVB-S2 (QPSK, fino a 500 kS) legge il nominativo e risponde con QRZ, MER e margine in sovrimpressione, poi il ciclo riprende. Serve una pausa di almeno 30 s. Durante le pause l'access point resta spento.",camh:"Camera ribaltata in orizzontale (specchio)",camv:"Camera ribaltata in verticale (capovolta)",sr1000:"1000 (solo monoscopio, filtro!)",nocall:"⚠ Imposta il tuo nominativo (QRZ) e salva prima di trasmettere.",temp:"Temperatura chip",telem:"Telemetria in sovrimpressione: temperatura del chip, accensione, ciclo (modi dal vivo)",led:"LED di stato",o_led_norm:"normale",o_led_min:"al minimo (batteria)",o_led_off:"spento",s_xvtr:"Transverter / mixer esterno",lo:"Oscillatore locale OL (MHz, 0 = nessun mixer)",xvtr:"Frequenza finale",o_sum:"OL + IF",o_diff:"OL − IF (o IF − OL)",final:"Frequenza finale in aria:",inv_note:"(spettro invertito dal mixer: compensato)",xv_note:"La scheda trasmette sempre sulla IF (frequenza impostata sopra, 2300–2450 MHz). Con un mixer esterno il segnale va sulla frequenza finale, che compare in sovrimpressione, nel nome del servizio e qui. Dopo il mixer serve un filtro sulla banda finale.",o_live:"barre con dati in tempo reale",title:'Beacon DATV',conn:'connessione…',online:'collegato',offline:'non raggiungibile',intx:'beacon in TX',s_status:'Stato',mode:'Modo',up:'Acceso da',
 s_tx:'Trasmissione',freq:'Frequenza (MHz)',fec:'FEC (DVB-S2 QPSK)',level:"Livello (dB, massimo −5)",dc:'Correzione DC I / Q',
@@ -448,7 +449,32 @@ applied:'تم تطبيق القيم (لم تُحفظ بعد).',errors:'قيم غ
 preview:'المعاينة جاهزة',uploading:'جارٍ الرفع…',upload_fail:'توقف الرفع',confirm_erase:'حذف الملف المخصص؟ يبقى الملف القياسي.',
 saved:'تم حفظ الإعداد.',nvs_err:'خطأ في الكتابة إلى الذاكرة.',defaults:'القيم الافتراضية (لم تُحفظ بعد).',
 starting:'المنارة تبدأ: سيتوقف Wi-Fi. اضغط BOOT لإيقافها.',loaded:'تم الرفع',erased:'تم حذف الملف المخصص.',erase_fail:'تعذّر الحذف.',
-mode_cfg:'الإعداد',mode_tx:'المنارة تبث',mode_test:'إرسال تجريبي',absent:'غير موجود',error:'خطأ'}};
+mode_cfg:'الإعداد',mode_tx:'المنارة تبث',mode_test:'إرسال تجريبي',absent:'غير موجود',error:'خطأ'},
+cs:{s_sched:"Schéma cyklu",sc_boot:"Po zapnutí: čekání {s} s se zapnutým access pointem, pak se cyklus spustí sám",sc_manual:"Ruční start (SPUSTIT MAJÁK), pak se cyklus opakuje",sc_empty:"Není co vysílat: monoskop i kamera mají 0 s",sc_mono:"MONOSKOP",sc_cam:"KAMERA",
+sc_pause:"PAUZA",sc_listen:"PARROT POSLOUCHÁ",sc_cycle:"jeden cyklus = {s} s, pak se opakuje",sc_ratio:"TX {tx} % času · {k} {p} %",sc_idle:"klid",sc_heard:"signál",
+sc_wait:"čekání",sc_cap:"záznam",sc_dec:"dekódování",sc_reply:"ODPOVĚĎ",sc_qso:"Když během pauzy přijde signál DVB-S2:",sc_after:"pak restart a cyklus pokračuje",
+sc_how:"Pro QSO: vysílej na <b>{f} MHz</b> (SR do 500 kS), dokud LED svítí zeleně, aspoň <b>{n} s</b>; pak přepni na příjem: odpověď přijde asi <b>{r} s</b> po začátku tvého vysílání.",sc_short:"Krátká pauza: pro pohodlný poslech je potřeba aspoň {n} s.",s_parrot:"Parrot (automatická odpověď)",parrot:"Parrot zapnutý: v pauzách cyklu poslouchá na vlastním kmitočtu",preply:"Délka odpovědi (s, 10–250)",pstab:"Čekání před záznamem (s, 0–30)",
+qso:"Poslední QSO:",noqso:"žádné",parrot_note:"V pauzách maják poslouchá: když přijme DVB-S2 (QPSK, do 500 kS), přečte značku a odpoví s QRZ, MER a rezervou v překryvu, pak cyklus pokračuje. Pauza musí být aspoň 30 s. Access point je během pauz vypnutý.",camh:"Kamera převrácená vodorovně (zrcadlo)",camv:"Kamera převrácená svisle (vzhůru nohama)",sr1000:"1000 (jen monoskop, filtr!)",
+nocall:"⚠ Před vysíláním nastav vlastní značku (QRZ) a ulož.",temp:"Teplota čipu",telem:"Telemetrie v obraze: teplota čipu, doba běhu, cyklus (živé režimy)",led:"Stavová LED",o_led_norm:"normální",o_led_min:"minimální (baterie)",
+o_led_off:"vypnutá",s_xvtr:"Transvertor / externí směšovač",lo:"Místní oscilátor LO (MHz, 0 = bez směšovače)",xvtr:"Výsledný kmitočet",o_sum:"LO + IF",o_diff:"LO − IF (nebo IF − LO)",
+final:"Výsledný kmitočet ve vzduchu:",inv_note:"(spektrum otočené směšovačem: kompenzováno)",xv_note:"Deska vždy vysílá na IF (kmitočet nastavený výše, 2300–2450 MHz). S externím směšovačem jde signál na výsledný kmitočet, který se ukazuje v překryvu, v názvu služby a tady. Za směšovačem je potřeba filtr pro výsledné pásmo.",o_live:"pruhy s živými údaji",title:"DATV maják",conn:"připojování…",
+online:"připojeno",offline:"nedostupné",intx:"maják vysílá",s_status:"Stav",mode:"Režim",up:"Doba běhu",
+s_tx:"Vysílání",freq:"Kmitočet (MHz)",fec:"FEC (DVB-S2 QPSK)",level:"Úroveň (dB, maximum −5)",dc:"Korekce DC I / Q",lvl_note:"Úroveň v teoretických dB vůči maximu modulátoru (−6 dB = poloviční amplituda), od −40 do −5: nad −5 dB začíná čip komprimovat. Skutečný výkon v dBm závisí na desce a je potřeba ho změřit.",
+band1:"Povolené pásmo",band2:"MHz: používej jen kmitočty povolené tvou licencí.",s_cycle:"Cyklus majáku",mono:"Monoskop (s, 0 = vynechat)",monosrc:"Vysílaný monoskop",o_std:"standardní",
+o_video:"vlastní video",o_image:"vlastní obrázek",cam:"Živá kamera (s, 0 = vynechat)",cammode:"Kamera",o_pip:"PiP na monoskopu",o_full:"celá obrazovka",
+pipbg:"Pozadí PiP",o_bars:"standardní pruhy",pause:"Pauza bez TX (s)",wait:"Čekání po zapnutí (s)",cycle_note:"Jen monoskop: kamera 0 s. Jen kamera: monoskop 0 s. Kamera a vlastní obrázky se posílají jako H.264 320x180, standardní monoskop a vlastní videa tak, jak byly připraveny (H.265 640x360).",ovl:"Značka a kmitočet v obraze (kamera, PiP, obrázek)",
+auto:"Automatický start po zapnutí (AUTO TX)",time:"Čas desky",b_time:"Nastavit čas z prohlížeče",time_unset:"nenastaven",time_ok:"Čas nastaven (rozdíl {d} s).",sc_align1:"Čas nastaven: cyklus začíná každou celou minutu (UTC, hh:mm:00); pauza/poslech asi {p} s.",
+sc_alignN:"Čas nastaven: cyklus trvá {n} min a začíná v minutách UTC dělitelných {n} (hh:mm:00); pauza/poslech asi {p} s.",sc_noalign:"Čas není nastaven: cyklus není zarovnaný na minutu (nastaví se sám po otevření této stránky).",s_serial:"USB / sériový port",b_connect:"Připojit",b_disconnect:"Odpojit",b_load:"Načíst konfiguraci (zastaví TX)",
+b_stop:"Zastavit TX / automatický start",b_send:"Odeslat",b_clear:"Vymazat",b_dl:"Stáhnout log",autoscroll:"Automaticky posouvat",cmd_ph:"příkaz (např. INFO, CONFIG)",
+ser_note:"Připoj desku přes USB a stiskni Připojit. Stránka čte log a nic neposílá: každý odeslaný znak zastaví TX. Konfigurace se načte sama, jakmile je deska v konfiguračním režimu.",ser_nosup:"Tento prohlížeč nepodporuje Web Serial: použij Chrome nebo Edge na počítači.",ser_old:"Firmware je pro konfiguraci přes USB příliš starý: aktualizuj ho.",ser_tx:"Deska vysílá nebo startuje: stránka nic neposílá, aby nepřerušila TX.",ser_unknown:"Připojeno. Stav desky neznámý: „Načíst konfiguraci“ zastaví případné vysílání.",ser_off:"nepřipojeno",
+ser_started:"Maják spuštěn: vysílání je vidět v logu. „Zastavit TX“ ho přeruší.",wifi_on:"Wi-Fi access point po zapnutí (vypnutý: konfigurace jen přes USB; tlačítko BOOT ho zapne)",s_wifi:"Konfigurační Wi-Fi",appass:"Nové heslo (8–23 znaků, prázdné = beze změny)",wifi_note:"Název sítě je ZNAČKA-BEACON. Změny platí od dalšího zapnutí access pointu.",b_apply:"Použít",
+b_save:"Použít a uložit",b_def:"Výchozí hodnoty",b_reload:"Načíst znovu",b_start:"SPUSTIT MAJÁK",tx_note:"Během vysílání slouží rádio Wi-Fi jako DATV modulátor a tato stránka přes Wi-Fi není dostupná. Maják zastavíš tlačítkem BOOT na desce (nebo libovolnou klávesou na sériovém portu).",s_media:"Monoskopy",
+m_std:"Standardní",m_bg:"Pozadí PiP",m_vid:"Vlastní video",m_img:"Vlastní obrázek",media_note:"Standardní monoskop a pozadí PiP jsou chráněné: lze k nim jen přidat vlastní.",s_img:"Vlastní obrázek (z telefonu nebo PC)",
+b_imgup:"Nahrát obrázek",b_imgdel:"Smazat obrázek",img_note:"Obrázek se tady v prohlížeči ořízne na 16:9 a zmenší na 320x180, pak se vysílá v H.264 jako statický monoskop nebo jako pozadí PiP.",s_vid:"Vlastní video (připravené na PC)",b_esup:"Nahrát video",b_esdel:"Smazat video",
+vid_note:"Soubor <b>.bin</b> vytvořený pomocí <code>tools/make_es.py --video my.mp4</code> (nebo <code>--image</code>): viz docs/MONOSCOPIO.md. Nejvýš {max} MB.",applied:"Hodnoty použity (zatím neuložené).",errors:"Neplatné hodnoty",confirm_start:"Spustit maják s použitou konfigurací? Wi-Fi se vypne.",preview:"Náhled připraven",uploading:"Nahrávám…",
+upload_fail:"Nahrávání přerušeno",confirm_erase:"Smazat vlastní soubor? Standardní zůstane.",saved:"Konfigurace uložena.",nvs_err:"Chyba zápisu do paměti.",defaults:"Výchozí hodnoty (zatím neuložené).",starting:"Maják startuje: Wi-Fi se vypne. Zastavíš ho tlačítkem BOOT.",
+loaded:"Nahráno",erased:"Vlastní soubor smazán.",erase_fail:"Smazání se nepovedlo.",mode_cfg:"konfigurace",mode_tx:"maják vysílá",mode_test:"zkušební vysílání",
+absent:"není",error:"Chyba"}};
 let L='it';
 function t(k){return(T[L]&&T[L][k])||(T.en&&T.en[k])||T.it[k]||k}
 let esMax=3,lastStatus='conn',lastMedia=null,lastMode='';
@@ -482,7 +508,9 @@ function api(path,body){
  const run=()=>new Promise((ok,ko)=>{const tm=setTimeout(()=>{apiWait=null;ko(Error('timeout'))},3000);
   apiWait={ok:j=>{clearTimeout(tm);ok(j)},ko:e=>{clearTimeout(tm);ko(e)}};
   serWrite(cmd).catch(e=>{apiWait=null;clearTimeout(tm);ko(e)})});
- const r=apiQ.then(run,run);apiQ=r.catch(()=>{});return r}
+ // un solo nuovo tentativo se la riga è arrivata rovinata (primo comando dopo l'avvio)
+ const r=apiQ.then(run,run).catch(e=>{if(e.message==='garbled')return new Promise(ok=>setTimeout(ok,300)).then(run);throw e});
+ apiQ=r.catch(()=>{});return r}
 // stato della scheda dedotto dal log: off, unknown (appena connessi), config, auto (attesa AUTO TX), tx, boot
 function setSer(k){serState=k;serShow()}
 function serShow(){if(!SER)return;const c=port&&serState!=='off';
@@ -501,7 +529,9 @@ function onLine(l){
   if(serState!=='config')setSer('config');if(w)j?w.ok(j):w.ko(Error('json'));return}
  if(serBusy&&/^ACK \d+$/.test(l)){lineWait&&lineWait(l);return}   // caricamento: gli ACK non riempiono il log
  logAdd(l);
- if(apiWait&&l.startsWith('ERR comando sconosciuto')){const w=apiWait;apiWait=null;w.ko(Error('old'));msg(t('ser_old'),'bad');return}
+ // senza il comando API il firmware vecchio risponde "ERR comando sconosciuto" (quello nuovo aggiunge il testo ricevuto)
+ if(apiWait&&l.startsWith('ERR comando sconosciuto')){const w=apiWait;apiWait=null;const old=l.trim()==='ERR comando sconosciuto';
+  w.ko(Error(old?'old':'garbled'));if(old)msg(t('ser_old'),'bad');return}
  if(lineWait)lineWait(l);
  if(/^(AUTO TX OFF|AUTO TX annullata|OK modo configurazione)/.test(l)){cfgAfterBoot=false;setSer('config');status(true)}
  else if(/^RIAVVIO/.test(l)){cfgAfterBoot=l.includes('"CONFIGMODE"');setSer(cfgAfterBoot?'boot':'tx')}
@@ -513,7 +543,7 @@ async function readLoop(p){const dec=new TextDecoder();let buf='';
   try{for(;;){const{value,done}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});
    let i;while((i=buf.indexOf('\n'))>=0){const l=buf.slice(0,i).replace(/\r$/,'');buf=buf.slice(i+1);if(l)onLine(l)}
    if(buf.length>4096)buf=''}}
-  catch(e){}finally{try{reader.releaseLock()}catch(e){}reader=null}}
+  catch(e){if(port===p)logAdd('— '+e.message+' —','bad')}finally{try{reader.releaseLock()}catch(e){}reader=null}}
  if(port===p)serGone()}
 async function serOpen(p){
  // DTR/RTS non toccati: la scheda non si resetta e la TX in corso continua
@@ -522,7 +552,9 @@ async function serOpen(p){
  if(cfgAfterBoot){setSer('boot');setTimeout(()=>{if(port===p&&serState==='boot'){cfgAfterBoot=false;setSer('config');status(true)}},2500)}
  else setSer('unknown');
  readLoop(p)}
-function serGone(){try{writer&&writer.releaseLock()}catch(e){}writer=null;port=null;if(apiWait){apiWait.ko(Error('port'));apiWait=null}setSer('off')}
+// porta persa (cavo, riavvio USB, errore): va chiusa, altrimenti Chrome la tiene occupata e non si riapre più
+function serGone(){const p=port;try{writer&&writer.releaseLock()}catch(e){}writer=null;port=null;if(apiWait){apiWait.ko(Error('port'));apiWait=null}
+ setSer('off');if(p)p.close().catch(()=>{})}
 async function serClose(){const p=port;lastPort=null;port=null;try{reader&&await reader.cancel()}catch(e){}
  try{writer&&writer.releaseLock()}catch(e){}writer=null;try{await p.close()}catch(e){}setSer('off')}
 function serInit(){$('serial').style.display='';serShow();if(!('serial'in navigator)){$('sconn').disabled=true;return}
@@ -536,7 +568,8 @@ function serInit(){$('serial').style.display='';serShow();if(!('serial'in naviga
  $('sdl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[...$('log').childNodes].map(n=>n.textContent).join('\n')+'\n'],{type:'text/plain'}));
   a.download='beacon-log-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
  // riavvio della XIAO (USB nativa) o cavo staccato e riattaccato: la porta già autorizzata si riapre da sola
- navigator.serial.addEventListener('connect',e=>{if(!port&&lastPort===e.target)serOpen(e.target)});
+ let lastAuto=0;
+ navigator.serial.addEventListener('connect',e=>{if(!port&&lastPort===e.target&&Date.now()-lastAuto>5000){lastAuto=Date.now();serOpen(e.target)}});
  navigator.serial.addEventListener('disconnect',e=>{if(port===e.target)serGone()})}
 // MEDIAW: blocchi da 2048 byte, la scheda risponde "ACK <byte>" dopo ciascuno e alla fine "OK caricato: ..." o "ERR ..."
 function expect(re,ms){return new Promise((ok,ko)=>{const tm=setTimeout(()=>{lineWait=null;ko(Error('timeout'))},ms);
