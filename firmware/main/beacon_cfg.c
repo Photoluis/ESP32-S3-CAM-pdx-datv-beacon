@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+#include <time.h>
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -83,9 +85,55 @@ const char *pdx_cfg_telemetry(const pdx_cfg_t *c, uint32_t cycle)
     const uint32_t up = (uint32_t)(esp_timer_get_time() / 60000000);
     char ts[12] = "TEMP --";
     if (!isnan(t)) snprintf(ts, sizeof(ts), "TEMP %dC", (int)lroundf(t));
-    if (cycle) snprintf(s, sizeof(s), "%s  UP %uh%02um  CYCLE %u", ts, (unsigned)(up / 60), (unsigned)(up % 60), (unsigned)cycle);
-    else snprintf(s, sizeof(s), "%s  UP %uh%02um", ts, (unsigned)(up / 60), (unsigned)(up % 60));
+    int n;
+    if (cycle) n = snprintf(s, sizeof(s), "%s  UP %uh%02um  CYCLE %u", ts, (unsigned)(up / 60), (unsigned)(up % 60), (unsigned)cycle);
+    else n = snprintf(s, sizeof(s), "%s  UP %uh%02um", ts, (unsigned)(up / 60), (unsigned)(up % 60));
+    if (pdx_time_valid() && n > 0 && n < 31) {                /* ora UTC dell'inizio del segmento: 39 caratteri in 320 px */
+        const time_t t = (time_t)(pdx_time_ms() / 1000);
+        struct tm tm;
+        gmtime_r(&t, &tm);
+        snprintf(s + n, sizeof(s) - (size_t)n, "  %02d:%02dZ", tm.tm_hour, tm.tm_min);
+    }
     return s;
+}
+
+int64_t pdx_time_ms(void)
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+bool pdx_time_valid(void) { return pdx_time_ms() / 1000 >= PDX_TIME_MIN_S; }
+
+void pdx_time_set_ms(int64_t ms)
+{
+    const struct timeval tv = {.tv_sec = (time_t)(ms / 1000), .tv_usec = (suseconds_t)(ms % 1000) * 1000};
+    settimeofday(&tv, NULL);
+}
+
+const char *pdx_time_str(int64_t ms)
+{
+    static char s[64];                                 /* 21 caratteri; il resto per il controllo dei formati */
+    const time_t t = (time_t)(ms / 1000);
+    struct tm tm;
+    gmtime_r(&t, &tm);
+    snprintf(s, sizeof(s), "%04d-%02d-%02d %02d:%02d:%02dZ", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour,
+             tm.tm_min, tm.tm_sec);
+    return s;
+}
+
+uint32_t pdx_cycle_min(const pdx_cfg_t *c)
+{
+    const uint32_t tx = c->mono_s + c->cam_s, margin = c->parrot_on && c->pause_s ? 20u : 5u;
+    const uint32_t need = (tx + margin + 59u) / 60u, want = (tx + c->pause_s + 30u) / 60u;
+    return need > want ? need : want;
+}
+
+int64_t pdx_next_start_ms(const pdx_cfg_t *c, int64_t not_before_ms)
+{
+    const int64_t period = (int64_t)pdx_cycle_min(c) * 60000;
+    return (not_before_ms + period - 1) / period * period;
 }
 
 const char *pdx_cfg_provider(const pdx_cfg_t *c, uint32_t if_khz)
@@ -165,11 +213,12 @@ void pdx_cfg_print(const pdx_cfg_t *c)
                "senza audio)\n", (unsigned)(pdx_cfg_sr(c) / 1000u));
     printf("CFG SR %u kS | ", (unsigned)(pdx_cfg_sr(c) / 1000u));
     printf("auto %s | freq %.3f MHz | FEC %s | livello %.1f dB (amp %d) | dc %d/%d | ciclo: monoscopio %s %u s, camera %s %u s, "
-           "pausa %u s | sfondo PiP %s | sovrimpressione %s | attesa all'avvio %u s | LED %s | telemetria %s | QRZ %s | LOC %s | camera%s%s\n",
+           "pausa %u s | sfondo PiP %s | sovrimpressione %s | attesa all'avvio %u s | LED %s | telemetria %s | Wi-Fi %s | QRZ %s | LOC %s | camera%s%s\n",
            c->auto_tx ? "ON" : "OFF", c->freq_khz / 1000.0, c->fec, pdx_amp_to_level(c->amp), c->amp, c->dci, c->dcq, src[c->mono_src % 4],
            c->mono_s, c->cam_mode == PDX_CAMMODE_PIP ? "PIP" : "FULL", c->cam_s, c->pause_s,
            c->pip_bg ? "IMAGE" : "STD", c->ovl ? "ON" : "OFF", c->boot_wait_s,
-           c->led == PDX_LED_OFF ? "OFF" : c->led == PDX_LED_MIN ? "MIN" : "NORMAL", c->telem ? "ON" : "OFF", c->callsign,
+           c->led == PDX_LED_OFF ? "OFF" : c->led == PDX_LED_MIN ? "MIN" : "NORMAL", c->telem ? "ON" : "OFF",
+           c->wifi_off ? "OFF" : "ON", c->callsign,
            c->locator[0] ? c->locator : "-", c->cam_flip & PDX_CAMFLIP_H ? " ribaltata H" : "",
            c->cam_flip & PDX_CAMFLIP_V ? " ribaltata V" : (c->cam_flip ? "" : " dritta"));
     printf("CFG Parrot %s: ascolto nelle pause, risposta %u s, stabilizzazione %u s\n", c->parrot_on ? "ON" : "OFF",
@@ -297,6 +346,10 @@ const char *pdx_cfg_set(pdx_cfg_t *c, const char *key, const char *value)
         if (!strcasecmp(value, "on") || !strcmp(value, "1")) c->telem = 1;
         else if (!strcasecmp(value, "off") || !strcmp(value, "0")) c->telem = 0;
         else return "telem ON/OFF";
+    } else if (!strcasecmp(key, "wifi")) {               /* access point all'avvio: OFF = configurazione solo dalla seriale */
+        if (!strcasecmp(value, "on") || !strcmp(value, "1")) c->wifi_off = 0;
+        else if (!strcasecmp(value, "off") || !strcmp(value, "0")) c->wifi_off = 1;
+        else return "wifi ON/OFF";
     } else if (!strcasecmp(key, "led")) {
         if (!strcasecmp(value, "normal")) c->led = PDX_LED_NORMAL;
         else if (!strcasecmp(value, "min")) c->led = PDX_LED_MIN;
@@ -393,13 +446,25 @@ static bool segment(const pdx_cfg_t *c, uint32_t cycle, bool mono, pdx_rf_abort_
     return ms + 50u >= want;
 }
 
-uint32_t pdx_beacon_run(const pdx_cfg_t *c, pdx_rf_abort_fn tx_abort, pdx_pause_fn pause_fn)
+uint32_t pdx_beacon_run(const pdx_cfg_t *c, pdx_rf_abort_fn tx_abort, pdx_rf_abort_fn idle_abort, pdx_pause_fn pause_fn)
 {
     if (!c->mono_s && !c->cam_s) {
         printf("BEACON niente da trasmettere: monoscopio e camera a 0 s\n");
         return 0;
     }
     for (uint32_t cycle = 1;; cycle++) {
+        if (pdx_time_valid()) {                       /* partenza nel minuto pieno del ciclo (fino a 1 s di ritardo va bene) */
+            const int64_t now = pdx_time_ms(), t0 = pdx_next_start_ms(c, now - 1000);
+            if (t0 - now > 1500) {
+                printf("BEACON partenza alle %s (tra %u s, ciclo di %u min)\n", pdx_time_str(t0), (unsigned)((t0 - now + 999) / 1000),
+                       (unsigned)pdx_cycle_min(c));
+                fflush(stdout);
+            }
+            while (pdx_time_ms() < t0) {
+                if (idle_abort && idle_abort()) return cycle - 1;
+                vTaskDelay(pdMS_TO_TICKS(t0 - pdx_time_ms() > 60 ? 50 : 5));
+            }
+        }
         bool sent = false;
         if (c->mono_s && !segment(c, cycle, true, tx_abort, &sent)) return cycle - 1;
         if (c->cam_s && !segment(c, cycle, false, tx_abort, &sent)) return cycle - 1;
@@ -407,8 +472,8 @@ uint32_t pdx_beacon_run(const pdx_cfg_t *c, pdx_rf_abort_fn tx_abort, pdx_pause_
             printf("BEACON nessun segmento trasmesso: ciclo fermato\n");
             return cycle - 1;
         }
-        if (c->pause_s) {
-            printf("BEACON pausa %u s (TX spenta)\n", c->pause_s);
+        if (c->pause_s || pdx_time_valid()) {
+            if (!pdx_time_valid()) printf("BEACON pausa %u s (TX spenta)\n", c->pause_s);
             fflush(stdout);
             if (pause_fn ? !pause_fn(c, c->pause_s) : !wait_s(c->pause_s, NULL)) return cycle;
         }

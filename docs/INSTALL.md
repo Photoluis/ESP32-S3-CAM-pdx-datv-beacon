@@ -117,5 +117,30 @@ Test card and backgrounds are written as above (`--port /dev/ttyACM0`).
 4. Change the Wi-Fi password in the menu (the network name becomes `<CALLSIGN>-BEACON`).
 5. Serial console alternative (115200 baud): `SET call IZ7PDX`, `SET loc JN80PS` (v1.1.0+), `SAVE`, `CONFIG`.
 
+### Configuration over USB (development version)
+
+The same page as the Wi-Fi one also works over the USB cable, with the **live log** of the serial console:
+**https://photoluis.github.io/Esp32s3-cam-pdx-datv-beacon/config/** (Chrome or Edge on a computer, Web Serial).
+
+- Press **Connect** and choose the port (CH340 on the ESP32-S3-CAM, `USB JTAG/serial debug unit` on the XIAO). The
+  board is not reset.
+- The page **only listens** until the log shows that the board is in configuration mode: any character sent stops the
+  TX, exactly like a key in a terminal. If the board is already transmitting, **Read configuration** stops it (the
+  board then restarts in configuration mode and the page loads the values by itself).
+- Apply / save, test cards upload (at 115200 baud a 3 MB video takes about 5 minutes on the CH340; much faster on
+  the XIAO), start the beacon, **Stop TX**, and a field for serial commands (`INFO`, `CONFIG`, ...). **Download log**
+  saves the log as a text file.
+- **Wi-Fi access point at power-on** (`SET wifi OFF`): with the AP off the board is configured over USB only and a
+  TX no longer needs the restart for the radio. Pressing **BOOT** in configuration mode switches the AP on until the
+  next restart.
+
+**Time:** the page sets the board clock (UTC) by itself when it loads the configuration, and with **Set time from
+browser** (serial: `TIME <ms UTC>`, `TIME` prints it). With the time set the cycle starts on the full minute
+(`docs/PARROT_GUIDE.md`) and the telemetry line shows `hh:mmZ`. The time survives the restarts between TX and
+listening, not a power cut.
+
+For scripts: `API status`, `API set <key=value&...>`, `API time t=<ms>`, `API save`, `API defaults`, `API erase video|image` answer with
+one line `@API {json}` (same JSON as the Wi-Fi page).
+
 **Licensed radio amateurs only**, on the frequencies and at the power allowed by your licence, always with a band-pass
 filter on the output.

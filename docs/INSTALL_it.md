@@ -118,5 +118,30 @@ Monoscopio e sfondi si scrivono come sopra (`--port /dev/ttyACM0`).
 4. Cambiate la password del Wi-Fi dal menu (il nome della rete diventa `<NOMINATIVO>-BEACON`).
 5. In alternativa dalla console seriale (115200 baud): `SET call IZ7PDX`, `SET loc JN80PS` (dalla v1.1.0), `SAVE`, `CONFIG`.
 
+### Configurazione via USB (versione di sviluppo)
+
+La stessa pagina del Wi-Fi funziona anche dal cavo USB, con il **log in tempo reale** della console seriale:
+**https://photoluis.github.io/Esp32s3-cam-pdx-datv-beacon/config/** (Chrome o Edge su computer, Web Serial).
+
+- Premete **Connetti** e scegliete la porta (CH340 sulla ESP32-S3-CAM, `USB JTAG/serial debug unit` sulla XIAO). La
+  scheda non si resetta.
+- La pagina **ascolta soltanto** finché il log non mostra che la scheda è in configurazione: ogni carattere inviato
+  ferma la TX, come un tasto nel terminale. Se la scheda sta già trasmettendo, **Leggi configurazione** la ferma (la
+  scheda riparte in configurazione e la pagina carica i valori da sola).
+- Applica / salva, caricamento dei monoscopi (a 115200 baud un video di 3 MB richiede circa 5 minuti sulla CH340;
+  molto meno sulla XIAO), avvio del beacon, **Ferma TX** e un campo per i comandi seriali (`INFO`, `CONFIG`, ...).
+  **Scarica log** salva il log in un file di testo.
+- **Access point Wi-Fi all'accensione** (`SET wifi OFF`): con l'AP spento la scheda si configura solo via USB e la TX
+  non richiede più il riavvio per la radio. Il pulsante **BOOT** in configurazione accende l'AP fino al riavvio
+  successivo.
+
+**Ora:** la pagina imposta l'orologio della scheda (UTC) da sola quando carica la configurazione, e con **Imposta
+l'ora dal browser** (seriale: `TIME <ms UTC>`, `TIME` la stampa). Con l'ora impostata il ciclo parte al minuto pieno
+(`docs/PARROT_GUIDE_it.md`) e la riga di telemetria mostra `hh:mmZ`. L'ora resta con i riavvii tra TX e ascolto, non
+con lo spegnimento.
+
+Per gli script: `API status`, `API set <chiave=valore&...>`, `API time t=<ms>`, `API save`, `API defaults`,
+`API erase video|image` rispondono con una riga `@API {json}` (lo stesso JSON della pagina Wi-Fi).
+
 **Solo per radioamatori con licenza**, sulle frequenze e con le potenze consentite, sempre con un filtro passa-banda
 sull'uscita.

@@ -33,6 +33,9 @@ button.go{background:var(--ok);grid-column:1/-1}
 #msg{min-height:20px;font-size:14px;margin:4px 0 10px}
 .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
 small{color:var(--muted)}
+#log{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;height:320px;overflow:auto;margin:10px 0;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all;direction:ltr;text-align:left}
+#log .cmd{color:var(--acc)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row input{flex:1;min-width:0;width:auto;direction:ltr}.row button{padding:9px 14px}
 @media(max-width:420px){.g{grid-template-columns:1fr}#langs{gap:3px}#langs svg{width:24px;height:16px}}
 </style>
 </head>
@@ -40,12 +43,23 @@ small{color:var(--muted)}
 <header><div><h1>ESP32-S3_CAM_PDX_DATV_BEACON</h1><div class="bname" id="call">…</div></div><div class="st" id="st"></div>
 <div id="langs"></div></header>
 <main>
+<section id="serial" style="display:none"><h2 data-t="s_serial"></h2>
+<div class="btns"><button type="button" class="ser" id="sconn" data-t="b_connect"></button><button type="button" class="ser sec" id="sload" data-t="b_load"></button>
+<button type="button" class="ser go" id="sstop" style="display:none;background:var(--bad)" data-t="b_stop"></button></div>
+<p id="sst" class="warn" style="margin:8px 0 0"></p>
+<pre id="log"></pre>
+<div class="row"><input id="scmd" autocomplete="off" spellcheck="false" autocapitalize="characters"><button type="button" class="ser" id="ssend" data-t="b_send"></button></div>
+<div class="row" style="margin:8px 0"><label class="chk"><input type="checkbox" id="sauto" checked> <span data-t="autoscroll"></span></label><button type="button" class="ser sec" id="sclr" data-t="b_clear"></button><button type="button" class="ser sec" id="sdl" data-t="b_dl"></button></div>
+<small data-t="ser_note"></small>
+</section>
+
 <section><h2 data-t="s_status"></h2>
 <div class="kv">
 <b>Firmware</b><span id="fw">–</span>
 <b data-t="mode"></b><span id="mode">–</span>
 <b data-t="up"></b><span id="up">–</span>
 <b data-t="temp"></b><span id="temp">–</span>
+<b data-t="time"></b><span><bdi id="btime">–</bdi> <button type="button" class="sec" id="settime" data-t="b_time" style="padding:4px 10px;font-size:13px;margin-inline-start:8px"></button></span>
 </div></section>
 
 <form id="f">
@@ -107,6 +121,7 @@ small{color:var(--muted)}
 </section>
 
 <section><h2 data-t="s_wifi"></h2>
+<p style="margin-top:0"><label class="chk"><input type="checkbox" id="wifi"> <span data-t="wifi_on"></span></label></p>
 <label><span data-t="appass"></span><input name="appass" id="appass" type="password" autocomplete="new-password"></label>
 <small data-t="wifi_note"></small>
 </section>
@@ -168,6 +183,8 @@ cam:'Camera dal vivo (s, 0 = saltata)',cammode:'Camera',o_pip:'PiP sul monoscopi
 pause:'Pausa senza TX (s)',wait:'Attesa all\'accensione (s)',
 cycle_note:'Solo monoscopio: camera a 0 s. Solo camera: monoscopio a 0 s. Camera e immagini personalizzate vanno in H.264 320x180, il monoscopio standard e i video personalizzati come sono stati preparati (H.265 640x360).',
 ovl:'QRZ e frequenza in sovrimpressione (camera, PiP, immagine)',auto:'Partenza automatica all\'accensione (AUTO TX)',
+time:"Ora della scheda",b_time:"Imposta l’ora dal browser",time_unset:"non impostata",time_ok:"Ora impostata (scarto {d} s).",sc_align1:"Ora impostata: il ciclo parte a ogni minuto pieno (UTC, hh:mm:00); pausa/ascolto di circa {p} s.",sc_alignN:"Ora impostata: il ciclo dura {n} min e parte nei minuti UTC divisibili per {n} (hh:mm:00); pausa/ascolto di circa {p} s.",sc_noalign:"Ora non impostata: il ciclo non è allineato al minuto (si imposta da sola aprendo questa pagina).",
+s_serial:"Porta USB / seriale",b_connect:"Connetti",b_disconnect:"Disconnetti",b_load:"Leggi configurazione (ferma la TX)",b_stop:"Ferma TX / partenza automatica",b_send:"Invia",b_clear:"Pulisci",b_dl:"Scarica log",autoscroll:"Scorrimento automatico",cmd_ph:"comando (es. INFO, CONFIG)",ser_note:"Collegare la scheda via USB e premere Connetti. La pagina legge il log senza inviare nulla: ogni carattere inviato ferma la TX. La configurazione si carica da sola quando la scheda è in modo configurazione.",ser_nosup:"Questo browser non supporta Web Serial: usare Chrome o Edge su computer.",ser_old:"Firmware troppo vecchio per la configurazione via USB: aggiornarlo.",ser_tx:"La scheda trasmette o si sta avviando: la pagina non invia nulla per non interrompere la TX.",ser_unknown:"Connesso. Stato della scheda sconosciuto: «Leggi configurazione» ferma un’eventuale TX.",ser_off:"non connesso",ser_started:"Beacon avviato: la TX si vede nel log. «Ferma TX» la interrompe.",wifi_on:"Access point Wi-Fi all’accensione (spento: configurazione solo da USB; il pulsante BOOT lo riaccende)",
 s_wifi:'Wi-Fi di configurazione',appass:'Nuova password (8–23 caratteri, vuoto = invariata)',wifi_note:'Il nome della rete è QRZ-BEACON. Le modifiche valgono dalla prossima accensione dell\'access point.',
 b_apply:'Applica',b_save:'Applica e salva',b_def:'Valori predefiniti',b_reload:'Ricarica',b_start:'AVVIA BEACON',
 tx_note:'Durante la trasmissione la radio Wi-Fi fa da modulatore DATV e questa pagina non è raggiungibile. Per fermare il beacon premere il pulsante BOOT della scheda (o un tasto sulla seriale).',
@@ -191,6 +208,8 @@ cam:'Live camera (s, 0 = skipped)',cammode:'Camera',o_pip:'PiP on the test card'
 pause:'Pause without TX (s)',wait:'Delay at power-on (s)',
 cycle_note:'Test card only: camera 0 s. Camera only: test card 0 s. Camera and custom images are sent as H.264 320x180, the standard test card and custom videos as prepared (H.265 640x360).',
 ovl:'Callsign and frequency overlay (camera, PiP, image)',auto:'Automatic start at power-on (AUTO TX)',
+time:"Board time",b_time:"Set time from browser",time_unset:"not set",time_ok:"Time set (offset {d} s).",sc_align1:"Clock set: the cycle starts at every full minute (UTC, hh:mm:00); pause/listening about {p} s.",sc_alignN:"Clock set: the cycle lasts {n} min and starts at UTC minutes divisible by {n} (hh:mm:00); pause/listening about {p} s.",sc_noalign:"Clock not set: the cycle is not aligned to the minute (it is set automatically when this page is opened).",
+s_serial:"USB / serial port",b_connect:"Connect",b_disconnect:"Disconnect",b_load:"Read configuration (stops TX)",b_stop:"Stop TX / auto start",b_send:"Send",b_clear:"Clear",b_dl:"Download log",autoscroll:"Auto-scroll",cmd_ph:"command (e.g. INFO, CONFIG)",ser_note:"Connect the board via USB and press Connect. The page reads the log without sending anything: every character sent stops the TX. The configuration loads by itself when the board is in configuration mode.",ser_nosup:"This browser does not support Web Serial: use Chrome or Edge on a computer.",ser_old:"Firmware too old for configuration over USB: please update it.",ser_tx:"The board is transmitting or booting: the page sends nothing so the TX is not interrupted.",ser_unknown:"Connected. Board state unknown: “Read configuration” stops any running TX.",ser_off:"not connected",ser_started:"Beacon started: the TX shows in the log. “Stop TX” interrupts it.",wifi_on:"Wi-Fi access point at power-on (off: configuration over USB only; the BOOT button turns it on)",
 s_wifi:'Configuration Wi-Fi',appass:'New password (8–23 characters, empty = unchanged)',wifi_note:'The network name is CALLSIGN-BEACON. Changes apply the next time the access point is switched on.',
 b_apply:'Apply',b_save:'Apply and save',b_def:'Defaults',b_reload:'Reload',b_start:'START BEACON',
 tx_note:'While transmitting, the Wi-Fi radio works as the DATV modulator and this page cannot be reached. To stop the beacon press the BOOT button on the board (or any key on the serial port).',
@@ -214,6 +233,8 @@ cam:'Live-Kamera (s, 0 = übersprungen)',cammode:'Kamera',o_pip:'PiP im Testbild
 pause:'Pause ohne Sendung (s)',wait:'Wartezeit beim Einschalten (s)',
 cycle_note:'Nur Testbild: Kamera 0 s. Nur Kamera: Testbild 0 s. Kamera und eigene Bilder werden als H.264 320x180 gesendet, das Standard-Testbild und eigene Videos wie vorbereitet (H.265 640x360).',
 ovl:'Rufzeichen und Frequenz einblenden (Kamera, PiP, Bild)',auto:'Automatischer Start beim Einschalten (AUTO TX)',
+time:"Uhrzeit der Platine",b_time:"Uhrzeit vom Browser setzen",time_unset:"nicht gesetzt",time_ok:"Uhrzeit gesetzt (Abweichung {d} s).",sc_align1:"Uhr gesetzt: der Zyklus startet zu jeder vollen Minute (UTC, hh:mm:00); Pause/Hören etwa {p} s.",sc_alignN:"Uhr gesetzt: der Zyklus dauert {n} min und startet zu UTC-Minuten, die durch {n} teilbar sind (hh:mm:00); Pause/Hören etwa {p} s.",sc_noalign:"Uhr nicht gesetzt: der Zyklus ist nicht auf die Minute ausgerichtet (sie wird beim Öffnen dieser Seite automatisch gesetzt).",
+s_serial:"USB / serieller Port",b_connect:"Verbinden",b_disconnect:"Trennen",b_load:"Konfiguration lesen (stoppt TX)",b_stop:"TX / Autostart stoppen",b_send:"Senden",b_clear:"Leeren",b_dl:"Log herunterladen",autoscroll:"Automatisch scrollen",cmd_ph:"Befehl (z. B. INFO, CONFIG)",ser_note:"Board per USB anschließen und Verbinden drücken. Die Seite liest das Log, ohne etwas zu senden: jedes gesendete Zeichen stoppt die TX. Die Konfiguration wird automatisch geladen, sobald das Board im Konfigurationsmodus ist.",ser_nosup:"Dieser Browser unterstützt Web Serial nicht: Chrome oder Edge auf einem Computer verwenden.",ser_old:"Firmware zu alt für die Konfiguration über USB: bitte aktualisieren.",ser_tx:"Das Board sendet oder startet: die Seite sendet nichts, damit die TX nicht unterbrochen wird.",ser_unknown:"Verbunden. Zustand des Boards unbekannt: „Konfiguration lesen“ stoppt eine laufende TX.",ser_off:"nicht verbunden",ser_started:"Bake gestartet: die TX ist im Log zu sehen. „TX stoppen“ unterbricht sie.",wifi_on:"WLAN-Access-Point beim Einschalten (aus: Konfiguration nur über USB; die BOOT-Taste schaltet ihn ein)",
 s_wifi:'Konfigurations-WLAN',appass:'Neues Passwort (8–23 Zeichen, leer = unverändert)',wifi_note:'Der Netzwerkname ist RUFZEICHEN-BEACON. Änderungen gelten ab dem nächsten Einschalten des Access Points.',
 b_apply:'Übernehmen',b_save:'Übernehmen und speichern',b_def:'Standardwerte',b_reload:'Neu laden',b_start:'BAKE STARTEN',
 tx_note:'Während der Sendung arbeitet das WLAN-Funkteil als DATV-Modulator und diese Seite ist nicht erreichbar. Zum Anhalten der Bake die BOOT-Taste der Platine drücken (oder eine Taste an der seriellen Schnittstelle).',
@@ -237,6 +258,8 @@ cam:'Cámara en directo (s, 0 = omitida)',cammode:'Cámara',o_pip:'PiP sobre la 
 pause:'Pausa sin TX (s)',wait:'Espera al encender (s)',
 cycle_note:'Solo carta de ajuste: cámara 0 s. Solo cámara: carta 0 s. La cámara y las imágenes personalizadas se envían en H.264 320x180; la carta estándar y los vídeos personalizados tal como se prepararon (H.265 640x360).',
 ovl:'Indicativo y frecuencia sobreimpresos (cámara, PiP, imagen)',auto:'Arranque automático al encender (AUTO TX)',
+time:"Hora de la placa",b_time:"Poner la hora del navegador",time_unset:"sin ajustar",time_ok:"Hora ajustada (desfase {d} s).",sc_align1:"Reloj ajustado: el ciclo arranca en cada minuto exacto (UTC, hh:mm:00); pausa/escucha de unos {p} s.",sc_alignN:"Reloj ajustado: el ciclo dura {n} min y arranca en los minutos UTC divisibles por {n} (hh:mm:00); pausa/escucha de unos {p} s.",sc_noalign:"Reloj sin ajustar: el ciclo no está alineado al minuto (se ajusta solo al abrir esta página).",
+s_serial:"Puerto USB / serie",b_connect:"Conectar",b_disconnect:"Desconectar",b_load:"Leer configuración (detiene la TX)",b_stop:"Detener TX / arranque automático",b_send:"Enviar",b_clear:"Borrar",b_dl:"Descargar log",autoscroll:"Desplazamiento automático",cmd_ph:"comando (p. ej. INFO, CONFIG)",ser_note:"Conecte la placa por USB y pulse Conectar. La página lee el log sin enviar nada: cada carácter enviado detiene la TX. La configuración se carga sola cuando la placa está en modo configuración.",ser_nosup:"Este navegador no admite Web Serial: use Chrome o Edge en un ordenador.",ser_old:"Firmware demasiado antiguo para la configuración por USB: actualícelo.",ser_tx:"La placa está transmitiendo o arrancando: la página no envía nada para no interrumpir la TX.",ser_unknown:"Conectado. Estado de la placa desconocido: «Leer configuración» detiene una TX en curso.",ser_off:"no conectado",ser_started:"Baliza iniciada: la TX se ve en el log. «Detener TX» la interrumpe.",wifi_on:"Punto de acceso Wi-Fi al encender (apagado: configuración solo por USB; el botón BOOT lo enciende)",
 s_wifi:'Wi-Fi de configuración',appass:'Nueva contraseña (8–23 caracteres, vacío = sin cambios)',wifi_note:'El nombre de la red es INDICATIVO-BEACON. Los cambios se aplican al próximo encendido del punto de acceso.',
 b_apply:'Aplicar',b_save:'Aplicar y guardar',b_def:'Valores por defecto',b_reload:'Recargar',b_start:'INICIAR BALIZA',
 tx_note:'Durante la transmisión la radio Wi-Fi funciona como modulador DATV y esta página no es accesible. Para detener la baliza pulse el botón BOOT de la placa (o una tecla en el puerto serie).',
@@ -260,6 +283,8 @@ cam:'Caméra en direct (s, 0 = sautée)',cammode:'Caméra',o_pip:'PiP sur la mir
 pause:'Pause sans émission (s)',wait:'Attente à la mise sous tension (s)',
 cycle_note:'Mire seule : caméra 0 s. Caméra seule : mire 0 s. La caméra et les images personnalisées partent en H.264 320x180, la mire standard et les vidéos personnalisées telles que préparées (H.265 640x360).',
 ovl:'Indicatif et fréquence en incrustation (caméra, PiP, image)',auto:'Démarrage automatique à la mise sous tension (AUTO TX)',
+time:"Heure de la carte",b_time:"Régler l’heure depuis le navigateur",time_unset:"non réglée",time_ok:"Heure réglée (écart {d} s).",sc_align1:"Horloge réglée : le cycle démarre à chaque minute pleine (UTC, hh:mm:00) ; pause/écoute d’environ {p} s.",sc_alignN:"Horloge réglée : le cycle dure {n} min et démarre aux minutes UTC divisibles par {n} (hh:mm:00) ; pause/écoute d’environ {p} s.",sc_noalign:"Horloge non réglée : le cycle n’est pas aligné sur la minute (elle se règle seule à l’ouverture de cette page).",
+s_serial:"Port USB / série",b_connect:"Connecter",b_disconnect:"Déconnecter",b_load:"Lire la configuration (arrête la TX)",b_stop:"Arrêter TX / démarrage auto",b_send:"Envoyer",b_clear:"Effacer",b_dl:"Télécharger le journal",autoscroll:"Défilement automatique",cmd_ph:"commande (ex. INFO, CONFIG)",ser_note:"Branchez la carte en USB et appuyez sur Connecter. La page lit le journal sans rien envoyer : chaque caractère envoyé arrête la TX. La configuration se charge d’elle-même quand la carte est en mode configuration.",ser_nosup:"Ce navigateur ne prend pas en charge Web Serial : utilisez Chrome ou Edge sur un ordinateur.",ser_old:"Firmware trop ancien pour la configuration par USB : mettez-le à jour.",ser_tx:"La carte émet ou démarre : la page n’envoie rien pour ne pas interrompre la TX.",ser_unknown:"Connecté. État de la carte inconnu : « Lire la configuration » arrête une éventuelle TX.",ser_off:"non connecté",ser_started:"Balise démarrée : la TX apparaît dans le journal. « Arrêter TX » l’interrompt.",wifi_on:"Point d’accès Wi-Fi à la mise sous tension (éteint : configuration par USB uniquement ; le bouton BOOT l’allume)",
 s_wifi:'Wi-Fi de configuration',appass:'Nouveau mot de passe (8–23 caractères, vide = inchangé)',wifi_note:'Le nom du réseau est INDICATIF-BEACON. Les changements s\'appliquent au prochain démarrage du point d\'accès.',
 b_apply:'Appliquer',b_save:'Appliquer et enregistrer',b_def:'Valeurs par défaut',b_reload:'Recharger',b_start:'DÉMARRER LA BALISE',
 tx_note:'Pendant l\'émission, la radio Wi-Fi sert de modulateur DATV et cette page n\'est pas accessible. Pour arrêter la balise, appuyez sur le bouton BOOT de la carte (ou une touche sur le port série).',
@@ -283,6 +308,8 @@ cam:'Câmara ao vivo (s, 0 = omitida)',cammode:'Câmara',o_pip:'PiP sobre o padr
 pause:'Pausa sem TX (s)',wait:'Espera ao ligar (s)',
 cycle_note:'Só padrão de teste: câmara 0 s. Só câmara: padrão 0 s. A câmara e as imagens personalizadas são enviadas em H.264 320x180; o padrão standard e os vídeos personalizados tal como foram preparados (H.265 640x360).',
 ovl:'Indicativo e frequência sobrepostos (câmara, PiP, imagem)',auto:'Arranque automático ao ligar (AUTO TX)',
+time:"Hora da placa",b_time:"Acertar a hora pelo navegador",time_unset:"não acertada",time_ok:"Hora acertada (desvio {d} s).",sc_align1:"Relógio acertado: o ciclo arranca em cada minuto certo (UTC, hh:mm:00); pausa/escuta de cerca de {p} s.",sc_alignN:"Relógio acertado: o ciclo dura {n} min e arranca nos minutos UTC divisíveis por {n} (hh:mm:00); pausa/escuta de cerca de {p} s.",sc_noalign:"Relógio não acertado: o ciclo não está alinhado ao minuto (acerta-se sozinho ao abrir esta página).",
+s_serial:"Porta USB / série",b_connect:"Ligar",b_disconnect:"Desligar",b_load:"Ler configuração (para a TX)",b_stop:"Parar TX / arranque automático",b_send:"Enviar",b_clear:"Limpar",b_dl:"Descarregar registo",autoscroll:"Deslocamento automático",cmd_ph:"comando (ex. INFO, CONFIG)",ser_note:"Ligue a placa por USB e prima Ligar. A página lê o registo sem enviar nada: cada carácter enviado para a TX. A configuração carrega sozinha quando a placa está em modo de configuração.",ser_nosup:"Este navegador não suporta Web Serial: use o Chrome ou o Edge num computador.",ser_old:"Firmware demasiado antigo para a configuração por USB: atualize-o.",ser_tx:"A placa está a transmitir ou a arrancar: a página não envia nada para não interromper a TX.",ser_unknown:"Ligado. Estado da placa desconhecido: «Ler configuração» para uma TX em curso.",ser_off:"não ligado",ser_started:"Baliza iniciada: a TX aparece no registo. «Parar TX» interrompe-a.",wifi_on:"Ponto de acesso Wi-Fi ao ligar (desligado: configuração só por USB; o botão BOOT liga-o)",
 s_wifi:'Wi-Fi de configuração',appass:'Nova palavra-passe (8–23 caracteres, vazio = sem alteração)',wifi_note:'O nome da rede é INDICATIVO-BEACON. As alterações aplicam-se na próxima vez que o ponto de acesso for ligado.',
 b_apply:'Aplicar',b_save:'Aplicar e guardar',b_def:'Valores de fábrica',b_reload:'Recarregar',b_start:'INICIAR BALIZA',
 tx_note:'Durante a transmissão o rádio Wi-Fi funciona como modulador DATV e esta página não está acessível. Para parar a baliza prima o botão BOOT da placa (ou uma tecla na porta série).',
@@ -306,6 +333,8 @@ cam:'Live camera (s, 0 = overgeslagen)',cammode:'Camera',o_pip:'PiP in het testb
 pause:'Pauze zonder TX (s)',wait:'Wachttijd bij inschakelen (s)',
 cycle_note:'Alleen testbeeld: camera 0 s. Alleen camera: testbeeld 0 s. Camera en eigen afbeeldingen worden als H.264 320x180 verzonden, het standaard testbeeld en eigen video\'s zoals voorbereid (H.265 640x360).',
 ovl:'Roepnaam en frequentie in beeld (camera, PiP, afbeelding)',auto:'Automatisch starten bij inschakelen (AUTO TX)',
+time:"Tijd van het bord",b_time:"Tijd instellen vanuit de browser",time_unset:"niet ingesteld",time_ok:"Tijd ingesteld (afwijking {d} s).",sc_align1:"Klok ingesteld: de cyclus start elke volle minuut (UTC, hh:mm:00); pauze/luisteren ongeveer {p} s.",sc_alignN:"Klok ingesteld: de cyclus duurt {n} min en start op UTC-minuten deelbaar door {n} (hh:mm:00); pauze/luisteren ongeveer {p} s.",sc_noalign:"Klok niet ingesteld: de cyclus is niet op de minuut uitgelijnd (wordt automatisch ingesteld bij het openen van deze pagina).",
+s_serial:"USB- / seriële poort",b_connect:"Verbinden",b_disconnect:"Verbreken",b_load:"Configuratie lezen (stopt TX)",b_stop:"TX / autostart stoppen",b_send:"Verzenden",b_clear:"Wissen",b_dl:"Log downloaden",autoscroll:"Automatisch scrollen",cmd_ph:"opdracht (bv. INFO, CONFIG)",ser_note:"Sluit het bord via USB aan en druk op Verbinden. De pagina leest de log zonder iets te verzenden: elk verzonden teken stopt de TX. De configuratie wordt vanzelf geladen zodra het bord in configuratiemodus is.",ser_nosup:"Deze browser ondersteunt Web Serial niet: gebruik Chrome of Edge op een computer.",ser_old:"Firmware te oud voor configuratie via USB: werk deze bij.",ser_tx:"Het bord zendt of start op: de pagina verzendt niets om de TX niet te onderbreken.",ser_unknown:"Verbonden. Toestand van het bord onbekend: ‘Configuratie lezen’ stopt een lopende TX.",ser_off:"niet verbonden",ser_started:"Baken gestart: de TX is te zien in de log. ‘TX stoppen’ onderbreekt die.",wifi_on:"Wifi-toegangspunt bij inschakelen (uit: configuratie alleen via USB; de BOOT-knop zet het aan)",
 s_wifi:'Configuratie-wifi',appass:'Nieuw wachtwoord (8–23 tekens, leeg = ongewijzigd)',wifi_note:'De netwerknaam is ROEPNAAM-BEACON. Wijzigingen gelden vanaf de volgende keer dat het toegangspunt aangaat.',
 b_apply:'Toepassen',b_save:'Toepassen en opslaan',b_def:'Standaardwaarden',b_reload:'Herladen',b_start:'BAKEN STARTEN',
 tx_note:'Tijdens het zenden werkt de wifi-radio als DATV-modulator en is deze pagina niet bereikbaar. Druk op de BOOT-knop van de print (of een toets op de seriële poort) om het baken te stoppen.',
@@ -329,6 +358,8 @@ cam:'Kamera na żywo (s, 0 = pominięta)',cammode:'Kamera',o_pip:'PiP na planszy
 pause:'Przerwa bez nadawania (s)',wait:'Oczekiwanie po włączeniu (s)',
 cycle_note:'Tylko plansza: kamera 0 s. Tylko kamera: plansza 0 s. Kamera i własne obrazy są nadawane w H.264 320x180, standardowa plansza i własne wideo tak, jak zostały przygotowane (H.265 640x360).',
 ovl:'Znak wywoławczy i częstotliwość na obrazie (kamera, PiP, obraz)',auto:'Automatyczny start po włączeniu (AUTO TX)',
+time:"Czas płytki",b_time:"Ustaw czas z przeglądarki",time_unset:"nieustawiony",time_ok:"Czas ustawiony (różnica {d} s).",sc_align1:"Zegar ustawiony: cykl startuje w każdej pełnej minucie (UTC, hh:mm:00); przerwa/nasłuch ok. {p} s.",sc_alignN:"Zegar ustawiony: cykl trwa {n} min i startuje w minutach UTC podzielnych przez {n} (hh:mm:00); przerwa/nasłuch ok. {p} s.",sc_noalign:"Zegar nieustawiony: cykl nie jest wyrównany do minuty (ustawia się sam po otwarciu tej strony).",
+s_serial:"Port USB / szeregowy",b_connect:"Połącz",b_disconnect:"Rozłącz",b_load:"Odczytaj konfigurację (zatrzymuje TX)",b_stop:"Zatrzymaj TX / autostart",b_send:"Wyślij",b_clear:"Wyczyść",b_dl:"Pobierz log",autoscroll:"Autoprzewijanie",cmd_ph:"polecenie (np. INFO, CONFIG)",ser_note:"Podłącz płytkę przez USB i naciśnij Połącz. Strona czyta log, nic nie wysyłając: każdy wysłany znak zatrzymuje TX. Konfiguracja wczytuje się sama, gdy płytka jest w trybie konfiguracji.",ser_nosup:"Ta przeglądarka nie obsługuje Web Serial: użyj Chrome lub Edge na komputerze.",ser_old:"Firmware zbyt stary do konfiguracji przez USB: zaktualizuj go.",ser_tx:"Płytka nadaje lub się uruchamia: strona nic nie wysyła, aby nie przerwać TX.",ser_unknown:"Połączono. Stan płytki nieznany: „Odczytaj konfigurację” zatrzyma trwającą TX.",ser_off:"nie połączono",ser_started:"Radiolatarnia uruchomiona: TX widać w logu. „Zatrzymaj TX” ją przerywa.",wifi_on:"Punkt dostępowy Wi-Fi po włączeniu (wyłączony: konfiguracja tylko przez USB; przycisk BOOT go włącza)",
 s_wifi:'Wi-Fi konfiguracyjne',appass:'Nowe hasło (8–23 znaki, puste = bez zmian)',wifi_note:'Nazwa sieci to ZNAK-BEACON. Zmiany obowiązują od następnego włączenia punktu dostępowego.',
 b_apply:'Zastosuj',b_save:'Zastosuj i zapisz',b_def:'Wartości domyślne',b_reload:'Odśwież',b_start:'URUCHOM RADIOLATARNIĘ',
 tx_note:'Podczas nadawania radio Wi-Fi pracuje jako modulator DATV i ta strona jest niedostępna. Aby zatrzymać radiolatarnię, naciśnij przycisk BOOT na płytce (lub dowolny klawisz na porcie szeregowym).',
@@ -352,6 +383,8 @@ cam:'Ζωντανή κάμερα (s, 0 = παράλειψη)',cammode:'Κάμε�
 pause:'Παύση χωρίς εκπομπή (s)',wait:'Αναμονή κατά την ενεργοποίηση (s)',
 cycle_note:'Μόνο κάρτα ελέγχου: κάμερα 0 s. Μόνο κάμερα: κάρτα 0 s. Η κάμερα και οι δικές σας εικόνες εκπέμπονται σε H.264 320x180, η τυπική κάρτα και τα δικά σας βίντεο όπως προετοιμάστηκαν (H.265 640x360).',
 ovl:'Διακριτικό κλήσης και συχνότητα πάνω στην εικόνα (κάμερα, PiP, εικόνα)',auto:'Αυτόματη έναρξη με την ενεργοποίηση (AUTO TX)',
+time:"Ώρα πλακέτας",b_time:"Ρύθμιση ώρας από το πρόγραμμα περιήγησης",time_unset:"δεν έχει ρυθμιστεί",time_ok:"Η ώρα ρυθμίστηκε (απόκλιση {d} s).",sc_align1:"Ρολόι ρυθμισμένο: ο κύκλος ξεκινά σε κάθε ακέραιο λεπτό (UTC, hh:mm:00)· παύση/ακρόαση περίπου {p} s.",sc_alignN:"Ρολόι ρυθμισμένο: ο κύκλος διαρκεί {n} min και ξεκινά στα λεπτά UTC που διαιρούνται με το {n} (hh:mm:00)· παύση/ακρόαση περίπου {p} s.",sc_noalign:"Το ρολόι δεν έχει ρυθμιστεί: ο κύκλος δεν είναι ευθυγραμμισμένος στο λεπτό (ρυθμίζεται αυτόματα με το άνοιγμα αυτής της σελίδας).",
+s_serial:"Θύρα USB / σειριακή",b_connect:"Σύνδεση",b_disconnect:"Αποσύνδεση",b_load:"Ανάγνωση ρυθμίσεων (σταματά την TX)",b_stop:"Διακοπή TX / αυτόματης εκκίνησης",b_send:"Αποστολή",b_clear:"Καθαρισμός",b_dl:"Λήψη καταγραφής",autoscroll:"Αυτόματη κύλιση",cmd_ph:"εντολή (π.χ. INFO, CONFIG)",ser_note:"Συνδέστε την πλακέτα μέσω USB και πατήστε Σύνδεση. Η σελίδα διαβάζει την καταγραφή χωρίς να στέλνει τίποτα: κάθε χαρακτήρας που στέλνεται σταματά την TX. Οι ρυθμίσεις φορτώνονται μόνες τους όταν η πλακέτα είναι σε λειτουργία ρύθμισης.",ser_nosup:"Αυτό το πρόγραμμα περιήγησης δεν υποστηρίζει Web Serial: χρησιμοποιήστε Chrome ή Edge σε υπολογιστή.",ser_old:"Το firmware είναι πολύ παλιό για ρύθμιση μέσω USB: ενημερώστε το.",ser_tx:"Η πλακέτα εκπέμπει ή εκκινεί: η σελίδα δεν στέλνει τίποτα για να μη διακοπεί η TX.",ser_unknown:"Συνδέθηκε. Άγνωστη κατάσταση πλακέτας: η «Ανάγνωση ρυθμίσεων» σταματά τυχόν TX.",ser_off:"μη συνδεδεμένο",ser_started:"Ο φάρος ξεκίνησε: η TX φαίνεται στην καταγραφή. Η «Διακοπή TX» τη σταματά.",wifi_on:"Σημείο πρόσβασης Wi-Fi στην ενεργοποίηση (ανενεργό: ρύθμιση μόνο μέσω USB· το κουμπί BOOT το ενεργοποιεί)",
 s_wifi:'Wi-Fi ρύθμισης',appass:'Νέος κωδικός (8–23 χαρακτήρες, κενό = χωρίς αλλαγή)',wifi_note:'Το όνομα του δικτύου είναι ΔΙΑΚΡΙΤΙΚΟ-BEACON. Οι αλλαγές ισχύουν από την επόμενη ενεργοποίηση του σημείου πρόσβασης.',
 b_apply:'Εφαρμογή',b_save:'Εφαρμογή και αποθήκευση',b_def:'Προεπιλογές',b_reload:'Ανανέωση',b_start:'ΕΝΑΡΞΗ ΦΑΡΟΥ',
 tx_note:'Κατά την εκπομπή ο πομπός Wi-Fi λειτουργεί ως διαμορφωτής DATV και η σελίδα δεν είναι προσβάσιμη. Για να σταματήσετε τον φάρο πατήστε το κουμπί BOOT της πλακέτας (ή ένα πλήκτρο στη σειριακή θύρα).',
@@ -375,6 +408,8 @@ cam:'ライブカメラ (秒、0 = 省略)',cammode:'カメラ',o_pip:'テスト
 pause:'送信なしの休止 (秒)',wait:'電源投入時の待ち時間 (秒)',
 cycle_note:'テストパターンのみ：カメラを 0 秒。カメラのみ：テストパターンを 0 秒。カメラとカスタム画像は H.264 320x180、標準テストパターンとカスタム動画は作成したまま (H.265 640x360) で送信されます。',
 ovl:'コールサインと周波数を画面に表示 (カメラ、PiP、画像)',auto:'電源投入時に自動開始 (AUTO TX)',
+time:"ボードの時刻",b_time:"ブラウザの時刻を設定",time_unset:"未設定",time_ok:"時刻を設定しました (差 {d} s)。",sc_align1:"時刻設定済み: サイクルは毎分 0 秒 (UTC, hh:mm:00) に始まります。休止/受信は約 {p} s。",sc_alignN:"時刻設定済み: サイクルは {n} 分で、{n} で割り切れる UTC の分 (hh:mm:00) に始まります。休止/受信は約 {p} s。",sc_noalign:"時刻未設定: サイクルは分に揃っていません (このページを開くと自動で設定されます)。",
+s_serial:"USB / シリアルポート",b_connect:"接続",b_disconnect:"切断",b_load:"設定を読み込む (TX を停止)",b_stop:"TX / 自動開始を停止",b_send:"送信",b_clear:"クリア",b_dl:"ログを保存",autoscroll:"自動スクロール",cmd_ph:"コマンド (例: INFO, CONFIG)",ser_note:"ボードを USB で接続し「接続」を押してください。ページは何も送信せずにログを読みます。送信した文字はすべて TX を停止させます。ボードが設定モードになると設定は自動で読み込まれます。",ser_nosup:"このブラウザは Web Serial に対応していません。パソコンの Chrome または Edge を使ってください。",ser_old:"USB での設定にはファームウェアが古すぎます。更新してください。",ser_tx:"ボードは送信中または起動中です。TX を中断しないよう、ページは何も送信しません。",ser_unknown:"接続しました。ボードの状態は不明です。「設定を読み込む」は実行中の TX を停止します。",ser_off:"未接続",ser_started:"ビーコンを開始しました。TX はログに表示されます。「TX を停止」で中断します。",wifi_on:"電源投入時の Wi-Fi アクセスポイント (オフ: 設定は USB のみ。BOOT ボタンでオンになります)",
 s_wifi:'設定用 Wi-Fi',appass:'新しいパスワード (8〜23 文字、空欄 = 変更なし)',wifi_note:'ネットワーク名は「コールサイン-BEACON」です。変更はアクセスポイントの次回起動時から有効になります。',
 b_apply:'適用',b_save:'適用して保存',b_def:'初期値',b_reload:'再読み込み',b_start:'ビーコン開始',
 tx_note:'送信中は Wi-Fi 無線部が DATV 変調器として動作するため、このページにはアクセスできません。ビーコンを止めるにはボードの BOOT ボタン（またはシリアルポートで任意のキー）を押してください。',
@@ -398,6 +433,8 @@ cam:'الكاميرا المباشرة (ثانية، 0 = تخطٍّ)',cammode:'�
 pause:'استراحة بدون إرسال (ثانية)',wait:'الانتظار عند التشغيل (ثانية)',
 cycle_note:'صورة الاختبار فقط: الكاميرا 0 ثانية. الكاميرا فقط: صورة الاختبار 0 ثانية. الكاميرا والصور المخصصة تُرسل بترميز H.264 بدقة 320x180، وصورة الاختبار القياسية والفيديوهات المخصصة كما أُعدّت (H.265 بدقة 640x360).',
 ovl:'إظهار نداء المحطة والتردد على الصورة (الكاميرا، PiP، الصورة)',auto:'بدء تلقائي عند التشغيل (AUTO TX)',
+time:"وقت اللوحة",b_time:"ضبط الوقت من المتصفح",time_unset:"غير مضبوط",time_ok:"تم ضبط الوقت (فرق {d} ث).",sc_align1:"الساعة مضبوطة: تبدأ الدورة عند كل دقيقة كاملة (UTC، hh:mm:00)؛ التوقف/الاستماع نحو {p} ث.",sc_alignN:"الساعة مضبوطة: تستمر الدورة {n} دقيقة وتبدأ عند دقائق UTC القابلة للقسمة على {n} (hh:mm:00)؛ التوقف/الاستماع نحو {p} ث.",sc_noalign:"الساعة غير مضبوطة: الدورة غير محاذاة للدقيقة (تُضبط تلقائيًا عند فتح هذه الصفحة).",
+s_serial:"منفذ USB / تسلسلي",b_connect:"اتصال",b_disconnect:"قطع الاتصال",b_load:"قراءة الإعداد (يوقف الإرسال)",b_stop:"إيقاف الإرسال / البدء التلقائي",b_send:"إرسال",b_clear:"مسح",b_dl:"تنزيل السجل",autoscroll:"تمرير تلقائي",cmd_ph:"أمر (مثل INFO، CONFIG)",ser_note:"صِل اللوحة عبر USB ثم اضغط اتصال. تقرأ الصفحة السجل دون إرسال أي شيء: كل حرف يُرسل يوقف الإرسال. يُحمَّل الإعداد تلقائيًا عندما تكون اللوحة في وضع الإعداد.",ser_nosup:"هذا المتصفح لا يدعم Web Serial: استخدم Chrome أو Edge على الحاسوب.",ser_old:"البرنامج الثابت قديم جدًا للإعداد عبر USB: حدِّثه.",ser_tx:"اللوحة تبث أو قيد التشغيل: لا ترسل الصفحة شيئًا كي لا يتوقف الإرسال.",ser_unknown:"متصل. حالة اللوحة غير معروفة: «قراءة الإعداد» يوقف أي إرسال جارٍ.",ser_off:"غير متصل",ser_started:"بدأت المنارة: يظهر الإرسال في السجل. «إيقاف الإرسال» يوقفه.",wifi_on:"نقطة وصول Wi-Fi عند التشغيل (إيقافها: الإعداد عبر USB فقط؛ زر BOOT يشغّلها)",
 s_wifi:'شبكة Wi-Fi للإعداد',appass:'كلمة مرور جديدة (8–23 حرفًا، فارغ = دون تغيير)',wifi_note:'اسم الشبكة هو نداء المحطة متبوعًا بـ -BEACON. تسري التغييرات عند التشغيل التالي لنقطة الوصول.',
 b_apply:'تطبيق',b_save:'تطبيق وحفظ',b_def:'القيم الافتراضية',b_reload:'إعادة التحميل',b_start:'تشغيل المنارة',
 tx_note:'أثناء الإرسال يعمل راديو Wi-Fi كمُعدِّل DATV ولا يمكن الوصول إلى هذه الصفحة. لإيقاف المنارة اضغط زر BOOT على اللوحة (أو أي مفتاح على المنفذ التسلسلي).',
@@ -427,29 +464,116 @@ function setLang(l){L=T[l]?l:'en';try{localStorage.setItem('lang',L)}catch(e){}
  document.querySelectorAll('#langs button').forEach(b=>b.classList.toggle('on',b.dataset.l===L));
  st(lastStatus);if(lastMode)$('mode').textContent=MODES[lastMode]?t(MODES[lastMode]):lastMode;
  if(lastMedia)for(const k of['es_std','img_std','es_usr','img_usr'])$('m_'+k).textContent=media(lastMedia[k]);
- showFinal();$('msg').textContent='';$('umsg').textContent=''}
+ showFinal();$('msg').textContent='';$('umsg').textContent='';$('scmd').placeholder=t('cmd_ph');serShow()}
 function st(k){lastStatus=k;$('st').textContent=t(k);$('st').className='st '+({online:'ok',offline:'bad',intx:'warn'}[k]||'')}
 for(const l of Object.keys(FLAGS)){const b=document.createElement('button');b.type='button';b.dataset.l=l;b.title=NAMES[l];b.setAttribute('aria-label',NAMES[l]);
  b.innerHTML=FLAGS[l];b.onclick=()=>setLang(l);$('langs').appendChild(b)}
+// ---- trasporto: HTTP se la pagina viene dalla scheda (access point), altrimenti Web Serial (GitHub Pages, localhost).
+// Sulla seriale ogni carattere ferma la TX: la pagina invia solo quando dal log sa che la scheda è in configurazione.
+const SER=location.hostname!=='192.168.4.1';
+let port=null,reader=null,writer=null,serState='off',serBusy=false,apiQ=Promise.resolve(),apiWait=null,lineWait=null,cfgAfterBoot=false,lastPort=null;
+const enc=new TextEncoder();
+async function serWrite(d){if(!writer)throw Error('port');await writer.write(typeof d==='string'?enc.encode(d):d)}
+// stessa interfaccia di fetch(...).json(): sulla seriale "API <op> [arg]" e la risposta è la riga "@API {json}"
+function api(path,body){
+ if(!SER)return fetch(path,body===undefined?undefined:{method:'POST',body}).then(r=>r.json());
+ const[p,q]=path.split('?'),op=p.slice(5),kind=new URLSearchParams(q||'').get('kind');
+ const cmd='API '+op+(kind?' '+kind:body?' '+String(body):'')+'\n';
+ const run=()=>new Promise((ok,ko)=>{const tm=setTimeout(()=>{apiWait=null;ko(Error('timeout'))},3000);
+  apiWait={ok:j=>{clearTimeout(tm);ok(j)},ko:e=>{clearTimeout(tm);ko(e)}};
+  serWrite(cmd).catch(e=>{apiWait=null;clearTimeout(tm);ko(e)})});
+ const r=apiQ.then(run,run);apiQ=r.catch(()=>{});return r}
+// stato della scheda dedotto dal log: off, unknown (appena connessi), config, auto (attesa AUTO TX), tx, boot
+function setSer(k){serState=k;serShow()}
+function serShow(){if(!SER)return;const c=port&&serState!=='off';
+ $('sconn').textContent=t(port?'b_disconnect':'b_connect');
+ $('sload').style.display=c&&serState!=='config'?'':'none';
+ $('sstop').style.display=c&&(serState==='tx'||serState==='auto')?'':'none';
+ $('sst').textContent=!('serial'in navigator)?t('ser_nosup'):!c?'':serState==='unknown'?t('ser_unknown'):serState==='config'?'':t('ser_tx');
+ document.querySelectorAll('main button:not(.ser)').forEach(b=>{if(!b.id||!['imgup','esup'].includes(b.id))b.disabled=serState!=='config'});
+ st(!c?'ser_off':serState==='config'?'online':serState==='unknown'?'conn':'intx')}
+const LOGMAX=2000;
+function logAdd(l,cls){const e=$('log'),d=document.createElement('div');d.textContent=l;
+ if(cls)d.className=cls;else if(/^(ERR|ATTENZIONE)/.test(l))d.className='bad';else if(/^(OK|AUTO TX|BEACON|TX )/.test(l))d.className='warn';
+ e.appendChild(d);while(e.childNodes.length>LOGMAX)e.removeChild(e.firstChild);if($('sauto').checked)e.scrollTop=e.scrollHeight}
+function onLine(l){
+ if(l.startsWith('@API ')){const w=apiWait;apiWait=null;let j=null;try{j=JSON.parse(l.slice(5))}catch(e){}
+  if(serState!=='config')setSer('config');if(w)j?w.ok(j):w.ko(Error('json'));return}
+ if(serBusy&&/^ACK \d+$/.test(l)){lineWait&&lineWait(l);return}   // caricamento: gli ACK non riempiono il log
+ logAdd(l);
+ if(apiWait&&l.startsWith('ERR comando sconosciuto')){const w=apiWait;apiWait=null;w.ko(Error('old'));msg(t('ser_old'),'bad');return}
+ if(lineWait)lineWait(l);
+ if(/^(AUTO TX OFF|AUTO TX annullata|OK modo configurazione)/.test(l)){cfgAfterBoot=false;setSer('config');status(true)}
+ else if(/^RIAVVIO/.test(l)){cfgAfterBoot=l.includes('"CONFIGMODE"');setSer(cfgAfterBoot?'boot':'tx')}
+ else if(/^=== ESP32/.test(l))setSer('boot');
+ else if(/^AUTO TX (ON|tra)/.test(l))setSer('auto');
+ else if(/^BEACON avvio/.test(l))setSer('tx')}
+async function readLoop(p){const dec=new TextDecoder();let buf='';
+ while(port===p&&p.readable){reader=p.readable.getReader();
+  try{for(;;){const{value,done}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});
+   let i;while((i=buf.indexOf('\n'))>=0){const l=buf.slice(0,i).replace(/\r$/,'');buf=buf.slice(i+1);if(l)onLine(l)}
+   if(buf.length>4096)buf=''}}
+  catch(e){}finally{try{reader.releaseLock()}catch(e){}reader=null}}
+ if(port===p)serGone()}
+async function serOpen(p){
+ // DTR/RTS non toccati: la scheda non si resetta e la TX in corso continua
+ try{await p.open({baudRate:115200,bufferSize:65536})}catch(e){if(e.name!=='InvalidStateError'){logAdd(e.message,'bad');return}}
+ port=lastPort=p;writer=p.writable.getWriter();logAdd('— '+t('online')+' —','cmd');
+ if(cfgAfterBoot){setSer('boot');setTimeout(()=>{if(port===p&&serState==='boot'){cfgAfterBoot=false;setSer('config');status(true)}},2500)}
+ else setSer('unknown');
+ readLoop(p)}
+function serGone(){try{writer&&writer.releaseLock()}catch(e){}writer=null;port=null;if(apiWait){apiWait.ko(Error('port'));apiWait=null}setSer('off')}
+async function serClose(){const p=port;lastPort=null;port=null;try{reader&&await reader.cancel()}catch(e){}
+ try{writer&&writer.releaseLock()}catch(e){}writer=null;try{await p.close()}catch(e){}setSer('off')}
+function serInit(){$('serial').style.display='';serShow();if(!('serial'in navigator)){$('sconn').disabled=true;return}
+ $('sconn').onclick=async()=>{if(port)return serClose();try{await serOpen(await navigator.serial.requestPort())}catch(e){}};
+ $('sload').onclick=()=>status(true);                 // il primo carattere ferma una TX: poi il riavvio porta in configurazione
+ $('sstop').onclick=()=>serWrite('\n').catch(()=>{});
+ const send=()=>{const c=$('scmd').value.trim();if(!c||!port)return;logAdd('> '+c,'cmd');$('scmd').value='';
+  if(/^(CW|TONE|QPSK|PLAY|ESPLAY|BEACON|PARROT|RX)/i.test(c))setSer('tx');serWrite(c+'\n').catch(()=>{})};
+ $('ssend').onclick=send;$('scmd').onkeydown=e=>{if(e.key==='Enter')send()};
+ $('sclr').onclick=()=>{$('log').textContent=''};
+ $('sdl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[...$('log').childNodes].map(n=>n.textContent).join('\n')+'\n'],{type:'text/plain'}));
+  a.download='beacon-log-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+ // riavvio della XIAO (USB nativa) o cavo staccato e riattaccato: la porta già autorizzata si riapre da sola
+ navigator.serial.addEventListener('connect',e=>{if(!port&&lastPort===e.target)serOpen(e.target)});
+ navigator.serial.addEventListener('disconnect',e=>{if(port===e.target)serGone()})}
+// MEDIAW: blocchi da 2048 byte, la scheda risponde "ACK <byte>" dopo ciascuno e alla fine "OK caricato: ..." o "ERR ..."
+function expect(re,ms){return new Promise((ok,ko)=>{const tm=setTimeout(()=>{lineWait=null;ko(Error('timeout'))},ms);
+ lineWait=l=>{if(l.startsWith('ERR')){clearTimeout(tm);lineWait=null;ko(Error(l.slice(4)))}else if(re.test(l)){clearTimeout(tm);lineWait=null;ok(l)}}})}
+async function serUpload(kind,data){const b=data instanceof Uint8Array?data:new Uint8Array(await data.arrayBuffer());
+ if(serState!=='config')return{ok:false,msg:t('ser_tx')};
+ serBusy=true;await apiQ;
+ try{let w=expect(/^READY/,10000);await serWrite('MEDIAW '+kind.toUpperCase()+' '+b.length+' '+crc32(b).toString(16)+'\n');await w;
+  const t0=Date.now();
+  for(let p=0;p<b.length;p+=2048){const n=Math.min(2048,b.length-p),last=p+n>=b.length;
+   w=expect(last?/^OK caricato/:new RegExp('^ACK '+(p+n)+'$'),15000);await serWrite(b.subarray(p,p+n));const l=await w;
+   if(last)return{ok:true,msg:l.slice(3)};
+   const s=(Date.now()-t0)/1000,r=Math.round(s*(b.length-p-n)/(p+n));umsg(t('uploading')+' '+Math.floor(100*(p+n)/b.length)+' %  (~'+r+' s)','warn')}}
+ catch(e){return{ok:false,msg:e.message}}
+ finally{serBusy=false}}
+
 // ---- stato e configurazione
 function msg(m,c){const e=$('msg');e.textContent=m;e.className=c||''}
 let lastCfg=null;
 function showFinal(){if(!lastCfg)return;$('final').textContent=lastCfg.final.toFixed(3);$('inv').textContent=lastCfg.inv?t('inv_note'):''}
 function showLevel(){$('levelv').textContent=(+$('level').value).toFixed(1)+' dB'}
-function fill(c){lastCfg=c;showFinal();for(const k of['freq','sr','fec','level','dci','dcq','mono','monosrc','cam','cammode','pipbg','pause','wait','lo','xvtr','led','preply','pstab'])$(k).value=c[k];showLevel();$('callin').value=c.call;$('loc').value=c.loc||'';$('call').textContent=c.call;$('nocall').style.display=c.call==='NOCALL'?'block':'none';$('auto').checked=!!c.auto;$('ovl').checked=!!c.ovl;$('telem').checked=!!c.telem;$('camh').checked=!!c.camh;$('camv').checked=!!c.camv;$('parrot').checked=!!c.parrot;sched()}
+function fill(c){lastCfg=c;showFinal();for(const k of['freq','sr','fec','level','dci','dcq','mono','monosrc','cam','cammode','pipbg','pause','wait','lo','xvtr','led','preply','pstab'])$(k).value=c[k];showLevel();$('callin').value=c.call;$('loc').value=c.loc||'';$('call').textContent=c.call;$('nocall').style.display=c.call==='NOCALL'?'block':'none';$('auto').checked=!!c.auto;$('ovl').checked=!!c.ovl;$('telem').checked=!!c.telem;$('camh').checked=!!c.camh;$('camv').checked=!!c.camv;$('parrot').checked=!!c.parrot;$('wifi').checked=c.wifi!==0;$('wifi').closest('p').style.display='wifi'in c?'':'none';sched()}
 async function status(full){
- try{const r=await fetch('/api/status');const s=await r.json();
+ try{const s=await api('/api/status');
   $('fw').textContent=s.fw;lastMode=s.mode;$('mode').textContent=MODES[s.mode]?t(MODES[s.mode]):s.mode;$('band').textContent=s.fmin+'–'+s.fmax;
   if(s.nocam)for(const k of['cam','cammode','pipbg','camh','camv'])$(k).closest('label').style.display='none';
   lastMedia=s.media;for(const k of['es_std','img_std','es_usr','img_usr'])$('m_'+k).textContent=media(s.media[k]);
   const mx=(s.media.es_max/1048576).toFixed(0);if(mx!=esMax){esMax=mx;setLang(L)}
   $('temp').textContent=s.temp>-90?s.temp.toFixed(1)+' °C':'–';
+  boardOff=s.time?s.time*1000-Date.now():null;showTime();
+  if(full&&Date.now()-timeSynced>10000&&(!s.time||Math.abs(boardOff)>2000)){timeSynced=Date.now();setTime(true)}   // anche dopo uno spegnimento
   const u=s.uptime;$('up').textContent=Math.floor(u/3600)+' h '+Math.floor(u%3600/60)+' min';
-  const q=s.qso;$('qso').textContent=q?('#'+q.n+'  '+q.call+'  MER '+q.mer.toFixed(1)+' dB  D '+q.d.toFixed(1)+'  '+q.sr+' kS '+q.fec+'  '+(q.foff>=0?'+':'')+q.foff.toFixed(1)+' kHz'):t('noqso');
+  const q=s.qso;$('qso').textContent=q?('#'+q.n+'  '+q.call+'  MER '+q.mer.toFixed(1)+' dB  D '+q.d.toFixed(1)+'  '+q.sr+' kS '+q.fec+'  '+(q.foff>=0?'+':'')+q.foff.toFixed(1)+' kHz'+(q.utc?'  '+new Date(q.utc*1000).toISOString().slice(11,16)+'Z':'')):t('noqso');
   st('online');if(full)fill(s.cfg);
  }catch(e){st('offline')}}
-function body(){const d=new URLSearchParams(new FormData($('f')));d.set('auto',$('auto').checked?'on':'off');d.set('ovl',$('ovl').checked?'on':'off');d.set('telem',$('telem').checked?'on':'off');d.set('camh',$('camh').checked?'on':'off');d.set('camv',$('camv').checked?'on':'off');d.set('parrot',$('parrot').checked?'on':'off');return d}
-async function post(u,b){const r=await fetch(u,{method:'POST',body:b});return r.json()}
+function body(){const d=new URLSearchParams(new FormData($('f')));d.set('auto',$('auto').checked?'on':'off');d.set('ovl',$('ovl').checked?'on':'off');d.set('telem',$('telem').checked?'on':'off');d.set('camh',$('camh').checked?'on':'off');d.set('camv',$('camv').checked?'on':'off');d.set('parrot',$('parrot').checked?'on':'off');if(lastCfg&&'wifi'in lastCfg)d.set('wifi',$('wifi').checked?'on':'off');return d}
+async function post(u,b){return api(u,b)}
 async function apply(){const j=await post('/api/set',body());$('appass').value='';fill(j.cfg);
  if(j.ok)msg(t('applied'),'ok');else msg(t('errors')+': '+j.errors.map(e=>e.split(':')[0]).join(', '),'bad');return j.ok}
 $('f').onsubmit=e=>{e.preventDefault();apply()};
@@ -480,13 +604,25 @@ function sched(){const svg=$('sched');if(!svg)return;
   const f=lastCfg?lastCfg.final.toFixed(3):$('freq').value;
   txt+='<br>'+t('sc_how').replace('{f}',f).replace('{sr}',$('sr').value).replace('{n}',S+4).replace('{r}',S+26);
   if(P<S+25)txt+='<br><span class="warn">'+t('sc_short').replace('{n}',S+25)+'</span>'}
+ // stessa formula di pdx_cycle_min() nel firmware
+ if(boardOff!==null){const n=Math.max(Math.ceil((M+C+(par&&P?20:5))/60),Math.floor((M+C+P+30)/60));
+  txt+='<br>'+t(n>1?'sc_alignN':'sc_align1').replace(/\{n\}/g,n).replace('{p}',n*60-M-C)}
+ else txt+='<br><small>'+t('sc_noalign')+'</small>';
  svg.setAttribute('viewBox',par&&P?'0 0 600 210':'0 0 600 120');svg.innerHTML=h;$('schedtxt').innerHTML=txt}
 for(const id of['mono','cam','pause','wait','preply','pstab','parrot','auto','freq','sr'])$(id).addEventListener('input',sched);$('level').oninput=showLevel;
 $('save').onclick=async()=>{if(await apply()){const j=await post('/api/save','');msg(srv(j.msg),j.ok?'ok':'bad')}};
 $('def').onclick=async()=>{const j=await post('/api/defaults','');await status(true);msg(srv(j.msg),'warn')};
+// ---- ora: la scheda non ha RTC a batteria; la pagina la imposta da sola (scarto > 2 s) e con il pulsante
+let boardOff=null,timeSynced=0;
+function showTime(){$('btime').textContent=boardOff===null?t('time_unset'):new Date(Date.now()+boardOff).toISOString().replace('T',' ').slice(0,19)+'Z'}
+async function setTime(quiet){try{const j=await post('/api/time','t='+Date.now());
+  if(j.ok){boardOff=0;showTime();sched();if(!quiet)msg(t('time_ok').replace('{d}',(j.delta/1000).toFixed(1)),'ok')}else msg(srv(j.msg),'bad')}catch(e){}}
+$('settime').onclick=()=>setTime(false);setInterval(showTime,1000);
 $('reload').onclick=()=>status(true).then(()=>msg('',''));
 $('start').onclick=async()=>{if(!confirm(t('confirm_start')))return;
- if(!await apply())return;const j=await post('/api/start','');msg(srv(j.msg),'warn');st('intx')};
+ if(!await apply())return;
+ if(SER){await serWrite('BEACON\n');setSer('tx');msg(t('ser_started'),'warn');return}
+ const j=await post('/api/start','');msg(srv(j.msg),'warn');st('intx')};
 // ---- monoscopi personalizzati
 function umsg(m,c){const e=$('umsg');e.textContent=m;e.className=c||''}
 const CRC=(()=>{const tb=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;tb[n]=c>>>0}return tb})();
@@ -508,7 +644,7 @@ $('imgfile').onchange=async()=>{const f=$('imgfile').files[0];if(!f)return;
  const lab=f.name.replace(/\.[^.]*$/,'').replace(/[^ -~]/g,'_').slice(0,35);for(let k=0;k<lab.length;k++)buf[24+k]=lab.charCodeAt(k);
  imgBlob=buf;$('imgup').disabled=false;umsg(t('preview')+': '+lab,'')};
 async function upload(kind,data,btn){btn.disabled=true;umsg(t('uploading'),'warn');
- try{const r=await fetch('/api/upload?kind='+kind,{method:'POST',body:data});const j=await r.json();umsg(j.ok?srv(j.msg):t('error')+': '+j.msg,j.ok?'ok':'bad')}
+ try{const j=SER?await serUpload(kind,data):await (await fetch('/api/upload?kind='+kind,{method:'POST',body:data})).json();umsg(j.ok?srv(j.msg):t('error')+': '+j.msg,j.ok?'ok':'bad')}
  catch(e){umsg(t('upload_fail'),'bad')}btn.disabled=false;status(false)}
 $('imgup').onclick=()=>imgBlob&&upload('image',imgBlob,$('imgup'));
 $('esfile').onchange=()=>{$('esup').disabled=!$('esfile').files[0]};
@@ -519,7 +655,8 @@ $('imgdel').onclick=()=>erase('image');$('esdel').onclick=()=>erase('video');
 // lingua: ?lang=xx, poi quella scelta l'ultima volta, poi quella del browser, altrimenti inglese
 let saved=null;try{saved=localStorage.getItem('lang')}catch(e){}
 setLang(new URLSearchParams(location.search).get('lang')||saved||(navigator.language||'en').slice(0,2).toLowerCase());
-status(true);setInterval(()=>status(false),5000);
+if(SER)serInit();else status(true);
+setInterval(()=>{if(!SER||(port&&serState==='config'&&!serBusy))status(false)},5000);
 </script>
 </body>
 </html>
