@@ -151,6 +151,15 @@ static const char *prepare(live_t *L, const pdx_live_cfg_t *c, double rate)
         int k = c->cam_kbps ? c->cam_kbps
                             : L->slow ? (int)((rate - need - 25000.0) * 0.6 / 1000.0)
                                           : (int)((rate - need - 30000.0) * 0.75 / 1000.0);
+        if (!c->cam_kbps && abps > 0 && k < (L->slow ? 12 : 60)) {
+            /* il suono generato non deve impedire la TX (risposta del Parrot a 40 kS 3/4): senza suono */
+            printf("LIVE suono %s tolto: con %.1f kbit/s di suono il video resterebbe a %d kbit/s\n",
+                   pdx_audio_name(c->audio), abps / 1000.0, k);
+            need -= abps;
+            abps = 0;
+            L->no_audio = true;
+            k = L->slow ? (int)((rate - need - 25000.0) * 0.6 / 1000.0) : (int)((rate - need - 30000.0) * 0.75 / 1000.0);
+        }
         L->kbps = k > 300 ? 300 : k;
         if (L->kbps < (L->slow ? 12 : 60)) return "bitrate troppo basso per il video dal vivo";
         for (int i = 0; i < PDX_VQ_LEN; i++)
@@ -165,7 +174,8 @@ static const char *prepare(live_t *L, const pdx_live_cfg_t *c, double rate)
                    L->agen.cw_frames * (double)PDX_AGEN_FRAME / PDX_AGEN_HZ, abps / 1000.0);
         else if (L->mux.agen) printf("LIVE suono: tono %.1f kbit/s\n", abps / 1000.0);
         else printf("LIVE suono: %s%s\n", L->no_audio ? "nessuno" : pdx_audio_name(c->audio),
-                    L->no_audio && c->audio != PDX_AUDIO_OFF ? " (audio del file: SR troppo basso)" : "");
+                    L->no_audio && c->audio == PDX_AUDIO_FILE ? " (audio del file: SR troppo basso)"
+                    : L->no_audio && gen ? " (bitrate troppo basso)" : "");
     }
     return e;
 }
