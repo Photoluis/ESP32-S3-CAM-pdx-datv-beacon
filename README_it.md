@@ -55,6 +55,8 @@ Il firmware è scritto con ESP-IDF, non con Arduino: per installarlo non serve l
 - **Uscita RF di fabbrica sull'antenna stampata:** per usare il connettore IPEX (necessario per il filtro e per le
   misure di potenza) va spostato un minuscolo componente 0402 sul modulo — vedi [docs/ANTENNA_IPEX.md](docs/ANTENNA_IPEX.md#italiano).
 - Ricevitore DVB-S2 per la prova (es. Minitiouner / Portsdown 4).
+- **Sconsigliata:** una scheda tipo DevKitC-1 provata il 15/11/2026 aveva un errore di frequenza di ≈ 28 ppm,
+  temperatura del chip alta e potenza bassa — vedi [docs/BOARD_NOT_RECOMMENDED.md](docs/BOARD_NOT_RECOMMENDED.md#italiano).
 
 ![Scheda ESP32-S3-CAM N16R8 con camera OV3660, porte USB-C COM (CH340) e OTG](docs/img/board_esp32s3_cam_n16r8.jpg)
 
