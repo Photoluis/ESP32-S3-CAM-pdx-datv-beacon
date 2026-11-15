@@ -137,6 +137,10 @@ La stessa pagina del Wi-Fi funziona anche dal cavo USB, con il **log in tempo re
   non richiede più il riavvio per la radio. Il pulsante **BOOT** in configurazione accende l'AP fino al riavvio
   successivo.
 
+**Suono** (`SET audio TONE|CW|FILE|OFF`): tono da 1 kHz, CW ID (il QRZ, e il locator se c'è posto, in Morse a
+750 Hz, circa 19 WPM, 1 s dopo l'inizio di ogni segmento e poi ogni 30 s), l'audio del file del monoscopio o del video
+personalizzato, oppure nessuno. Tono e CW sono generati dalla scheda e occupano pochi kbit/s: vanno anche a 40 kS.
+
 **Ora:** la pagina imposta l'orologio della scheda (UTC) da sola quando carica la configurazione, e con **Imposta
 l'ora dal browser** (seriale: `TIME <ms UTC>`, `TIME` la stampa). Con l'ora impostata il ciclo parte al minuto pieno
 (`docs/PARROT_GUIDE_it.md`) e la riga di telemetria mostra `hh:mmZ`. L'ora resta con i riavvii tra TX e ascolto, non

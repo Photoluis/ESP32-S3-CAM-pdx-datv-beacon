@@ -3,9 +3,10 @@
 #pragma once
 #include <stdbool.h>
 #include <stdint.h>
+#include "audio_gen.h"
 #include "rf_s3.h"
 
-#define PDX_CFG_VERSION 6
+#define PDX_CFG_VERSION 7
 
 typedef struct {
     uint16_t version;
@@ -39,6 +40,8 @@ typedef struct {
     uint8_t parrot_on;      /* Parrot: ascolto durante le pause del ciclo, risposta con QRZ e QRK */
     uint8_t parrot_reply;   /* durata della risposta, s (10..250) */
     uint8_t parrot_stab;    /* attesa tra il segnale trovato e la cattura, s (0..30) */
+    /* dalla versione 7 */
+    uint8_t audio;          /* PDX_AUDIO_*: suono nel TS (nessuno, tono, CW ID, dal file ES) */
 } pdx_cfg_t;
 
 #define PDX_PARROT_PAUSE_MIN 30u   /* pausa minima consigliata con il Parrot: occhiate + cattura + decodifica ~25 s */

@@ -69,14 +69,14 @@ static int cfg_json(char *b, size_t n)
     return snprintf(b, n,
                     "{\"auto\":%d,\"freq\":%.3f,\"fec\":\"%s\",\"amp\":%d,\"level\":%.1f,\"dci\":%d,\"dcq\":%d,\"mono\":%u,"
                     "\"monosrc\":\"%s\",\"cam\":%u,\"cammode\":\"%s\",\"pipbg\":\"%s\",\"ovl\":%d,\"pause\":%u,"
-                    "\"wait\":%u,\"call\":\"%s\",\"lo\":%.3f,\"xvtr\":\"%s\",\"final\":%.3f,\"inv\":%d,\"led\":\"%s\",\"telem\":%d,\"loc\":\"%s\",\"sr\":%u,\"camh\":%d,\"camv\":%d,\"parrot\":%d,\"preply\":%u,\"pstab\":%u,\"wifi\":%d}",
+                    "\"wait\":%u,\"call\":\"%s\",\"lo\":%.3f,\"xvtr\":\"%s\",\"final\":%.3f,\"inv\":%d,\"led\":\"%s\",\"telem\":%d,\"loc\":\"%s\",\"sr\":%u,\"camh\":%d,\"camv\":%d,\"parrot\":%d,\"preply\":%u,\"pstab\":%u,\"wifi\":%d,\"audio\":\"%s\"}",
                     cfg->auto_tx, cfg->freq_khz / 1000.0, cfg->fec, cfg->amp, pdx_amp_to_level(cfg->amp), cfg->dci, cfg->dcq, cfg->mono_s,
                     src[cfg->mono_src % 4], cfg->cam_s, cfg->cam_mode == PDX_CAMMODE_PIP ? "pip" : "full",
                     cfg->pip_bg ? "image" : "std", cfg->ovl, cfg->pause_s, cfg->boot_wait_s, cfg->callsign, cfg->lo_khz / 1000.0,
                     cfg->xvtr == PDX_XVTR_DIFF ? "diff" : "sum", fin / 1000.0, inv,
                     cfg->led == PDX_LED_OFF ? "off" : cfg->led == PDX_LED_MIN ? "min" : "normal", cfg->telem, cfg->locator, (unsigned)(pdx_cfg_sr(cfg) / 1000u),
                     (cfg->cam_flip & PDX_CAMFLIP_H) ? 1 : 0, (cfg->cam_flip & PDX_CAMFLIP_V) ? 1 : 0, cfg->parrot_on,
-                    cfg->parrot_reply, cfg->parrot_stab, !cfg->wifi_off);
+                    cfg->parrot_reply, cfg->parrot_stab, !cfg->wifi_off, pdx_audio_name(cfg->audio));
 }
 
 static esp_err_t send_json(httpd_req_t *r, const char *s)
@@ -96,7 +96,7 @@ static esp_err_t h_index(httpd_req_t *r)
 
 int pdx_web_status_json(char *b, size_t n)
 {
-    char c[580], md[4][96];
+    char c[600], md[4][96];
     pdx_cfg_lock();
     cfg_json(c, sizeof(c));
     pdx_cfg_unlock();
@@ -118,7 +118,7 @@ static esp_err_t h_status(httpd_req_t *r)
 {
     client_seen = true;
     pdx_led_activity();
-    char b[1420];
+    char b[1440];
     pdx_web_status_json(b, sizeof(b));
     return send_json(r, b);
 }

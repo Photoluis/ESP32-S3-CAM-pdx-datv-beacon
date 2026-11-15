@@ -17,12 +17,14 @@
  *   CAMBENCH <w> <h> <fotogrammi> <kbps> <fps>  prova camera + H.264 software sul core 1 (nessuna RF)
  *   ESPLAY <MHz> <liv> <s> [fec] [<SR>k] [short] [nopilots] [cam|pip|img|live|user]  TS generato sull'ESP: monoscopio standard,
  *        camera, camera in PiP, immagine personalizzata, video personalizzato
- *   TSDUMP | CAMDUMP | PIPDUMP | IMGDUMP <pacchetti>   TS in esadecimale senza RF (tools/ts_capture.py)
+ *   TSDUMP | CAMDUMP | PIPDUMP | IMGDUMP <pacchetti>   TS in esadecimale senza RF (tools/ts_capture.py), suono da SET audio
  *   MEDIA | MEDIAERASE VIDEO|IMAGE | MEDIAW VIDEO|IMAGE <byte> <crc32>   monoscopi in flash (tools/upload_media.py)
  *   CONFIG | SET <chiave> <valore> | SAVE | DEFAULTS   configurazione del beacon (chiavi: auto freq fec level amp dci dcq
- *        mono monosrc cam cammode pipbg ovl pause wait call loc appass lo xvtr led telem); SAVE la scrive in NVS
+ *        mono monosrc cam cammode pipbg ovl pause wait call loc appass lo xvtr led telem audio); SAVE la scrive in NVS
  *        loc = QTH locator Maidenhead (JN80 o JN80PS, - per toglierlo), in sovrimpressione accanto alla frequenza
  *        led NORMAL|MIN|OFF = LED di stato normale, al minimo o spento (alimentazione a batteria)
+ *        audio OFF|TONE|CW|FILE = suono nel TS: nessuno, tono da 1 kHz, QRZ e locator in Morse (750 Hz, ogni 30 s),
+ *        audio del file ES (monoscopio o video personalizzato); tono e CW generati anche a SR basso
  *        telem ON|OFF = riga con temperatura del chip, tempo di accensione e ciclo nei modi dal vivo
  *        lo = oscillatore locale di un mixer esterno (MHz, 0 = nessuno), xvtr SUM|DIFF: la scheda trasmette sempre sulla IF
  *        (2300..2450 MHz); sovrimpressione, SDT e pagina web mostrano la frequenza finale
@@ -294,7 +296,7 @@ static void live_cfg_from(pdx_live_cfg_t *lc, pdx_live_video_t v, uint32_t freq_
                            .service = cfg.callsign, .provider = pdx_cfg_provider(&cfg, freq_khz), .video = v,
                            .es = pdx_media_map(PDX_MEDIA_ES_STD, NULL), .ovl_full = cfg.ovl != 0,
                            .freq_khz = pdx_cfg_final_khz(&cfg, freq_khz, NULL), .telem = pdx_cfg_telemetry(&cfg, 0),
-                           .locator = cfg.locator};
+                           .locator = cfg.locator, .audio = cfg.audio};
     if (v == PDX_LV_IMG) lc->bg = usr_img;
     else lc->bg = cfg.pip_bg && usr_img ? usr_img : pdx_media_map(PDX_MEDIA_IMG_STD, NULL);
 }
@@ -602,7 +604,7 @@ static void parrot_pause_run(uint32_t s, int64_t end_s)
  * la pagina la distingue dal log anche se altri task stampano */
 static void api_cmd(int argc, char **argv)
 {
-    static char out[1440];
+    static char out[1460];
     const char *j = out, *op = argc > 1 ? argv[1] : "", *arg = argc > 2 ? argv[2] : "";
     if (argc == 2 && !strcasecmp(op, "status")) pdx_web_status_json(out, sizeof(out));
     else if (argc <= 3 && !strcasecmp(op, "set")) {
@@ -756,7 +758,13 @@ static void handle_cmd(char *line)
         static pdx_mux_t mux;
         const char *e = pdx_mux_init(&mux, es, rate, cfg.callsign, "IZ7PDX BEACON", false);
         if (e) { printf("ERR %s\n", e); return; }
-        printf("TSDUMP %u pacchetti a %.0f bit/s\n", (unsigned)n, rate);
+        static pdx_agen_t agen;                               /* suono come nel beacon (SET audio) */
+        mux.no_audio = cfg.audio == PDX_AUDIO_OFF;
+        if (cfg.audio == PDX_AUDIO_TONE || cfg.audio == PDX_AUDIO_CW) {
+            pdx_agen_init(&agen, cfg.audio, cfg.callsign, cfg.locator);
+            mux.agen = &agen;
+        }
+        printf("TSDUMP %u pacchetti a %.0f bit/s, suono %s\n", (unsigned)n, rate, pdx_audio_name(cfg.audio));
         uint8_t pk[188];
         for (uint32_t i = 0; i < n; i++) {
             pdx_mux_next(&mux, pk);

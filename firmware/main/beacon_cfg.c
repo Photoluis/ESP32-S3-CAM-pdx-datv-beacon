@@ -55,6 +55,7 @@ void pdx_cfg_defaults(pdx_cfg_t *c)
         .lo_khz = 0, .xvtr = PDX_XVTR_SUM, .telem = 1,
         .locator = "",         /* nessun locatore di fabbrica (come NOCALL): ognuno imposta il proprio */
         .parrot_on = 0, .parrot_reply = 60, .parrot_stab = 3,
+        .audio = PDX_AUDIO_TONE,
     };
 #if CONFIG_PDX_BOARD_XIAO_S3
     c->cam_s = 0;                                       /* XIAO: nessuna camera, solo monoscopio */
@@ -161,11 +162,13 @@ bool pdx_cfg_load(pdx_cfg_t *c)
     const size_t old_len = tmp.version == 2 ? offsetof(pdx_cfg_t, mono_src)
                          : tmp.version == 3 ? offsetof(pdx_cfg_t, lo_khz)
                          : tmp.version == 4 ? offsetof(pdx_cfg_t, locator)
-                         : tmp.version == 5 ? offsetof(pdx_cfg_t, cam_flip) : 0;
+                         : tmp.version == 5 ? offsetof(pdx_cfg_t, cam_flip)
+                         : tmp.version == 6 ? offsetof(pdx_cfg_t, audio) : 0;
     if (old_len && len == ((old_len + 3u) & ~(size_t)3u)) {
         pdx_cfg_t d;
         pdx_cfg_defaults(&d);
         memcpy((uint8_t *)&tmp + old_len, (const uint8_t *)&d + old_len, sizeof(tmp) - old_len);
+        tmp.audio = PDX_AUDIO_FILE;                     /* come prima: il suono del file ES (anche di un video proprio) */
         tmp.version = PDX_CFG_VERSION;
     } else if (len != sizeof(tmp) || tmp.version != PDX_CFG_VERSION) {
         return false;
@@ -177,6 +180,7 @@ bool pdx_cfg_load(pdx_cfg_t *c)
     /* la prima v1.2.0-dev salvava questi byte a zero (erano riservati) */
     if (tmp.parrot_reply < 10 || tmp.parrot_reply > 250) tmp.parrot_reply = 60;
     if (tmp.parrot_stab > 30) tmp.parrot_stab = 3;
+    if (tmp.audio >= PDX_AUDIO_N) tmp.audio = PDX_AUDIO_TONE;
 #if CONFIG_PDX_BOARD_XIAO_S3
     tmp.cam_s = 0;
 #endif
@@ -210,7 +214,7 @@ void pdx_cfg_print(const pdx_cfg_t *c)
                (unsigned)(pdx_cfg_sr(c) / 1000u));
     if (pdx_cfg_sr(c) < 125000u && c->mono_s && (c->mono_src == PDX_MONO_STD || c->mono_src == PDX_MONO_USR_VIDEO))
         printf("ATTENZIONE a %u kS il monoscopio precodificato non sta nel TS: monosrc LIVE o IMAGE (immagine fissa, "
-               "senza audio)\n", (unsigned)(pdx_cfg_sr(c) / 1000u));
+               "suono solo con audio TONE o CW)\n", (unsigned)(pdx_cfg_sr(c) / 1000u));
     printf("CFG SR %u kS | ", (unsigned)(pdx_cfg_sr(c) / 1000u));
     printf("auto %s | freq %.3f MHz | FEC %s | livello %.1f dB (amp %d) | dc %d/%d | ciclo: monoscopio %s %u s, camera %s %u s, "
            "pausa %u s | sfondo PiP %s | sovrimpressione %s | attesa all'avvio %u s | LED %s | telemetria %s | Wi-Fi %s | QRZ %s | LOC %s | camera%s%s\n",
@@ -221,6 +225,8 @@ void pdx_cfg_print(const pdx_cfg_t *c)
            c->wifi_off ? "OFF" : "ON", c->callsign,
            c->locator[0] ? c->locator : "-", c->cam_flip & PDX_CAMFLIP_H ? " ribaltata H" : "",
            c->cam_flip & PDX_CAMFLIP_V ? " ribaltata V" : (c->cam_flip ? "" : " dritta"));
+    printf("CFG suono %s%s\n", pdx_audio_name(c->audio),
+           c->audio == PDX_AUDIO_TONE ? " (1 kHz)" : c->audio == PDX_AUDIO_CW ? " (QRZ e locator in Morse ogni 30 s, 750 Hz)" : "");
     printf("CFG Parrot %s: ascolto nelle pause, risposta %u s, stabilizzazione %u s\n", c->parrot_on ? "ON" : "OFF",
            c->parrot_reply, c->parrot_stab);
     if (c->parrot_on && c->pause_s < PDX_PARROT_PAUSE_MIN)
@@ -371,12 +377,17 @@ const char *pdx_cfg_set(pdx_cfg_t *c, const char *key, const char *value)
     } else if (!strcasecmp(key, "pstab")) {
         if (!parse_int(value, 0, 30, &v)) return "pstab 0..30 s";
         c->parrot_stab = (uint8_t)v;
+    } else if (!strcasecmp(key, "audio")) {
+        uint8_t i = 0;
+        while (i < PDX_AUDIO_N && strcasecmp(value, pdx_audio_name(i))) i++;
+        if (i == PDX_AUDIO_N) return "audio OFF/TONE/CW/FILE";
+        c->audio = i;
     } else if (!strcasecmp(key, "xvtr")) {
         if (!strcasecmp(value, "sum")) c->xvtr = PDX_XVTR_SUM;
         else if (!strcasecmp(value, "diff")) c->xvtr = PDX_XVTR_DIFF;
         else return "xvtr SUM (OL+IF) / DIFF (|OL-IF|)";
     } else {
-        return "chiavi: auto freq sr fec level amp dci dcq mono monosrc cam cammode pipbg ovl pause wait call loc appass lo xvtr led telem camh camv parrot preply pstab";
+        return "chiavi: auto freq sr fec level amp dci dcq mono monosrc cam cammode pipbg ovl pause wait call loc appass lo xvtr led telem camh camv parrot preply pstab audio";
     }
     return NULL;
 }
@@ -400,7 +411,7 @@ static bool segment(const pdx_cfg_t *c, uint32_t cycle, bool mono, pdx_rf_abort_
     pdx_live_cfg_t lc = {.sr = pdx_cfg_sr(c), .fec = c->fec, .shortf = pdx_cfg_sr(c) < PDX_SR_SHORTF, .pilots = true, .amp = c->amp, .dci = c->dci, .dcq = c->dcq,
                          .service = c->callsign, .provider = pdx_cfg_provider(c, c->freq_khz), .ovl_full = c->ovl != 0,
                          .locator = c->locator,
-                         .freq_khz = fin, .es = pdx_media_map(PDX_MEDIA_ES_STD, NULL)};
+                         .freq_khz = fin, .es = pdx_media_map(PDX_MEDIA_ES_STD, NULL), .audio = c->audio};
     pdx_rf_set_invert(inv);
     pdx_cam_set_flip(c->cam_flip & PDX_CAMFLIP_H, c->cam_flip & PDX_CAMFLIP_V);
     lc.telem = pdx_cfg_telemetry(c, cycle);              /* letta qui, prima della TX */
