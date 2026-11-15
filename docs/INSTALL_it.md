@@ -144,7 +144,8 @@ personalizzato, oppure nessuno. Tono e CW sono generati dalla scheda e occupano 
 **Ora:** la pagina imposta l'orologio della scheda (UTC) da sola quando carica la configurazione, e con **Imposta
 l'ora dal browser** (seriale: `TIME <ms UTC>`, `TIME` la stampa). Con l'ora impostata il ciclo parte al minuto pieno
 (`docs/PARROT_GUIDE_it.md`) e la riga di telemetria mostra `hh:mmZ`. L'ora resta con i riavvii tra TX e ascolto, non
-con lo spegnimento.
+con lo spegnimento né con un reset (RST, apertura della porta USB, scrittura del firmware): la pagina la reimposta
+appena caricata.
 
 Per gli script: `API status`, `API set <chiave=valore&...>`, `API time t=<ms>`, `API save`, `API defaults`,
 `API erase video|image` rispondono con una riga `@API {json}` (lo stesso JSON della pagina Wi-Fi).

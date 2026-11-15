@@ -144,7 +144,7 @@ to 40 kS too.
 **Time:** the page sets the board clock (UTC) by itself when it loads the configuration, and with **Set time from
 browser** (serial: `TIME <ms UTC>`, `TIME` prints it). With the time set the cycle starts on the full minute
 (`docs/PARROT_GUIDE.md`) and the telemetry line shows `hh:mmZ`. The time survives the restarts between TX and
-listening, not a power cut.
+listening, not a power cut nor a reset (RST, opening the USB port, flashing): the page sets it again when it loads.
 
 For scripts: `API status`, `API set <key=value&...>`, `API time t=<ms>`, `API save`, `API defaults`, `API erase video|image` answer with
 one line `@API {json}` (same JSON as the Wi-Fi page).

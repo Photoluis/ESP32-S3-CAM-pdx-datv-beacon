@@ -20,7 +20,8 @@
   l'ora valida ogni ciclo parte nei minuti UTC multipli della sua durata (mono + camera + pausa arrotondati al minuto,
   almeno la TX + 20 s con il Parrot): l'ascolto del Parrot finisce in tempo per i due riavvii, la pausa senza Parrot
   arriva al minuto. L'ora passa i riavvii nella RAM RTC con il contatore RTC solo per la durata del riavvio (errore
-  misurato < 50 ms). Ora del QSO nel log e nella pagina, `hh:mmZ` nella riga di telemetria.
+  misurato < 50 ms); dopo gli altri reset (RST, apertura della porta USB, esptool, watchdog) l'ora non vale più (l'IDF
+  la riprendeva dal contatore a oscillatore RC: avanti di 2,4 min dopo 6 h di attesa) e la pagina la reimposta. Ora del QSO nel log e nella pagina, `hh:mmZ` nella riga di telemetria.
 - **Pagina web in ceco** (12 lingue): scelta automatica dalla lingua del browser.
 - **`SET wifi ON|OFF`:** access point all'accensione (predefinito ON, nel byte prima riservato: nessuna migrazione).
   Spento: configurazione solo via USB e nessun riavvio prima della TX; BOOT in configurazione lo accende fino al

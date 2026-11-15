@@ -167,7 +167,16 @@ static bool take_pending(char *cmd, size_t n)
     const bool ok = esp_reset_reason() == ESP_RST_SW && rtc_pending.magic == RTC_PENDING_MAGIC &&
                     rtc_pending.crc == pending_crc(&rtc_pending);
     rtc_pending.magic = 0;
-    if (!ok) return false;
+    if (!ok) {
+        /* dopo gli altri reset (RST, apertura della porta USB, esptool, watchdog) l'IDF riprende l'ora dal contatore RTC
+         * a oscillatore RC dall'ultima impostazione: dopo ore di attesa era avanti di 2,4 min (15/11). Meglio nessuna
+         * ora: la pagina web la reimposta appena caricata */
+        if (pdx_time_valid()) {
+            printf("ORA non più valida dopo il reset (%d): da reimpostare (pagina web o TIME)\n", (int)esp_reset_reason());
+            pdx_time_set_ms(0);
+        }
+        return false;
+    }
     cfg = rtc_pending.cfg;
     snprintf(cmd, n, "%s", rtc_pending.cmd);
     if (rtc_pending.time_ms) {

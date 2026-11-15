@@ -82,7 +82,7 @@ void pdx_cfg_print(const pdx_cfg_t *c);
 const char *pdx_cfg_set(pdx_cfg_t *c, const char *key, const char *value);
 
 /* ora UTC dal browser (pagina web o seriale, comando TIME). Senza RTC a batteria vale fino allo spegnimento; i riavvii
- * software la conservano (main.c la salva nella RAM RTC). Con l'ora valida ogni ciclo parte in un minuto pieno multiplo
+ * software la conservano (main.c la salva nella RAM RTC), gli altri reset la annullano. Con l'ora valida ogni ciclo parte in un minuto pieno multiplo
  * di pdx_cycle_min() (UTC): chi chiama sa quando il beacon trasmette e quando il Parrot ascolta. */
 #define PDX_TIME_MIN_S 1767225600LL   /* 01/01/2026: prima l'ora non è stata impostata */
 #define PDX_ALIGN_REBOOT_S 4u         /* dal riavvio dopo l'ascolto del Parrot alla partenza della TX, con margine */
