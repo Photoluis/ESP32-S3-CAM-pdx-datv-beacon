@@ -23,6 +23,7 @@ compilatore, Arduino IDE né ESP-IDF**.
 
 - Scheda: ESP32-S3 **N16R8** (16 MB flash, 8 MB PSRAM) con camera OV3660. La scheda provata ha due porte USB-C:
   **COM** (convertitore USB-seriale CH340) e **OTG** (USB nativa). Per programmare e per la console usate **COM**.
+  Su alcune schede la stessa porta è marcata **TTL** invece di COM.
 - Un cavo USB-C **dati** (alcuni cavi caricano soltanto).
 - Di fabbrica l'uscita RF di solito è sull'**antenna stampata**, non sul connettore IPEX: leggete
   [ANTENNA_IPEX.md](ANTENNA_IPEX.md#italiano) prima di collegare un filtro o misurare la potenza.
@@ -45,7 +46,7 @@ Immagini della release:
 ## 1. Installazione dal browser
 
 1. Aprite **https://photoluis.github.io/Esp32s3-cam-pdx-datv-beacon/** con Chrome o Edge (computer).
-2. Collegate la scheda alla porta COM, premete **Installa**, scegliete la porta e confermate.
+2. Collegate la scheda alla porta COM (TTL), premete **Installa**, scegliete la porta e confermate.
 3. Prima installazione: spuntate *Erase device*. Aggiornamento: lasciatela vuota.
 4. Alla fine premete **RST** e passate alla [prima configurazione](#prima-configurazione).
 
@@ -59,9 +60,13 @@ computer non si installa nulla. Firefox e Safari non supportano Web Serial.
 2. Doppio clic su:
    - `1_INSTALL_FULL_erase.bat` per la prima installazione;
    - `2_UPDATE_firmware_only.bat` per aggiornare conservando le impostazioni.
-3. Scrivete la porta COM (es. `COM3`) oppure premete Invio per il riconoscimento automatico.
+3. Lo script elenca le porte seriali con il nome di Windows (es. `USB-SERIAL CH340 (COM29)`). Scrivete la porta
+   (`COM29` o solo `29`), oppure premete Invio: lo script prova ogni porta con esptool (solo lettura) e usa quella con
+   un ESP32-S3. Altre schede ESP32 collegate al PC (es. un ESP32-C3) vengono saltate; con più di un ESP32-S3 chiede
+   quale programmare. Funziona con qualsiasi convertitore USB-seriale (CH340, CP210x) e con la USB nativa.
 
-Il pacchetto contiene `esptool.exe` di Espressif (GPL-2.0), le due immagini e gli script. La prima volta Windows
+Il pacchetto contiene `esptool.exe` di Espressif (GPL-2.0), le due immagini e gli script (`find_port.ps1` sceglie
+la porta; gira in Windows PowerShell, presente in ogni Windows 10/11). La prima volta Windows
 SmartScreen può chiedere conferma (*Ulteriori informazioni → Esegui comunque*).
 
 ## 3. Python + esptool

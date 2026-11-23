@@ -2,6 +2,10 @@
 
 ## In sviluppo
 
+- **Pacchetto Windows, scelta della porta (issue #4):** `find_port.ps1` elenca le porte con il nome di Windows, accetta
+  `COM29` o `29` e con Invio cerca l'ESP32-S3 provando ogni porta con `esptool chip-id` (solo lettura). Un altro ESP32
+  collegato (es. un C3) non blocca più il riconoscimento automatico; con più ESP32-S3 si sceglie dall'elenco. Non
+  dipende dal CH340: vale anche per CP210x e USB nativa. Nei testi la porta è "COM o TTL (non OTG)".
 - **Seeed XIAO ESP32S3 Plus (16 MB di flash) senza camera:** variante di compilazione `sdkconfig.defaults.xiao`
   (`CONFIG_PDX_BOARD_XIAO_S3`): console sulla USB nativa (USB-Serial-JTAG), LED giallo su GPIO21 con ritmi al posto
   dei colori, nessuna camera (voci nascoste nella pagina web, `SET cam` solo 0). Guida: `docs/INSTALL.md`.

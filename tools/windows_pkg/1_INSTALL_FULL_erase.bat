@@ -6,14 +6,17 @@ cd /d "%~dp0"
 title DATV Beacon - FULL install
 echo.
 echo  ESP32-S3-CAM_PDX DATV Beacon - FULL INSTALL (erases the board / cancella la scheda)
-echo  Connect the board to the COM port (CH340).  Collegate la scheda alla porta COM (CH340).
+echo  Connect the board to its USB-serial port (marked COM or TTL, not OTG).
+echo  Collegate la scheda alla porta USB-seriale (marcata COM o TTL, non OTG).
 echo.
-set /p PORT=COM port (e.g. COM3, empty = auto) / porta COM (es. COM3, vuoto = automatico):
-set PORTARG=
-if not "%PORT%"=="" set PORTARG=--port %PORT%
+rem porta: elenco con i nomi di Windows, COM3 o 3, Invio = ricerca dell'ESP32-S3 (find_port.ps1)
+set PORT=
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0find_port.ps1" -Out "%TEMP%\datv_beacon_port.txt"
+set /p PORT=<"%TEMP%\datv_beacon_port.txt"
+if "%PORT%"=="" ( echo. & echo  No port selected / nessuna porta scelta. & pause & exit /b 1 )
 for %%F in (*_full.bin) do set IMG=%%F
 if "%IMG%"=="" ( echo ERROR: *_full.bin not found & pause & exit /b 1 )
-"%~dp0esptool.exe" --chip esp32s3 %PORTARG% -b 460800 write-flash 0x0 "%IMG%"
+"%~dp0esptool.exe" --chip esp32s3 --port %PORT% -b 460800 write-flash 0x0 "%IMG%"
 if errorlevel 1 (
   echo.
   echo  FAILED. Hold BOOT, press and release RST, release BOOT, then run again.

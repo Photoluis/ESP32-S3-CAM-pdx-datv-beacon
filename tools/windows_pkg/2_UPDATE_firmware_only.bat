@@ -7,12 +7,14 @@ title DATV Beacon - firmware update
 echo.
 echo  ESP32-S3-CAM_PDX DATV Beacon - FIRMWARE UPDATE (keeps settings and custom test cards)
 echo.
-set /p PORT=COM port (e.g. COM3, empty = auto) / porta COM (es. COM3, vuoto = automatico):
-set PORTARG=
-if not "%PORT%"=="" set PORTARG=--port %PORT%
+rem porta: elenco con i nomi di Windows, COM3 o 3, Invio = ricerca dell'ESP32-S3 (find_port.ps1)
+set PORT=
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0find_port.ps1" -Out "%TEMP%\datv_beacon_port.txt"
+set /p PORT=<"%TEMP%\datv_beacon_port.txt"
+if "%PORT%"=="" ( echo. & echo  No port selected / nessuna porta scelta. & pause & exit /b 1 )
 for %%F in (*_app_only.bin) do set IMG=%%F
 if "%IMG%"=="" ( echo ERROR: *_app_only.bin not found & pause & exit /b 1 )
-"%~dp0esptool.exe" --chip esp32s3 %PORTARG% -b 460800 write-flash 0x0 "%IMG%"
+"%~dp0esptool.exe" --chip esp32s3 --port %PORT% -b 460800 write-flash 0x0 "%IMG%"
 if errorlevel 1 (
   echo.
   echo  FAILED. Hold BOOT, press and release RST, release BOOT, then run again.
