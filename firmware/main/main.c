@@ -764,25 +764,28 @@ static void handle_cmd(char *line)
         if (pdx_s2_init(&s2, "3/4", false, true)) { printf("ERR s2\n"); return; }
         const double rate = pdx_s2_ts_bitrate(&s2, pdx_cfg_sr(&cfg));
         pdx_s2_free(&s2);
-        static pdx_mux_t mux;
-        const char *e = pdx_mux_init(&mux, es, rate, cfg.callsign, "IZ7PDX BEACON", false);
-        if (e) { printf("ERR %s\n", e); return; }
-        static pdx_agen_t agen;                               /* suono come nel beacon (SET audio) */
-        mux.no_audio = cfg.audio == PDX_AUDIO_OFF;
+        /* multiplexer e suono in PSRAM: statici occuperebbero 5 KB di RAM interna, che manca poi alla DMA della camera */
+        pdx_mux_t *mux = heap_caps_calloc(1, sizeof(*mux), MALLOC_CAP_SPIRAM);
+        pdx_agen_t *agen = heap_caps_calloc(1, sizeof(*agen), MALLOC_CAP_SPIRAM);
+        const char *e = mux && agen ? pdx_mux_init(mux, es, rate, cfg.callsign, "IZ7PDX BEACON", false) : "memoria";
+        if (e) { printf("ERR %s\n", e); free(mux); free(agen); return; }
+        mux->no_audio = cfg.audio == PDX_AUDIO_OFF;           /* suono come nel beacon (SET audio) */
         if (cfg.audio == PDX_AUDIO_TONE || cfg.audio == PDX_AUDIO_CW) {
-            pdx_agen_init(&agen, cfg.audio, cfg.callsign, cfg.locator);
-            mux.agen = &agen;
+            pdx_agen_init(agen, cfg.audio, cfg.callsign, cfg.locator);
+            mux->agen = agen;
         }
         printf("TSDUMP %u pacchetti a %.0f bit/s, suono %s\n", (unsigned)n, rate, pdx_audio_name(cfg.audio));
         uint8_t pk[188];
         for (uint32_t i = 0; i < n; i++) {
-            pdx_mux_next(&mux, pk);
+            pdx_mux_next(mux, pk);
             printf("T ");
             for (int k = 0; k < 188; k++) printf("%02x", pk[k]);
             printf("\n");
         }
-        printf("TSDUMP fine: video %u audio %u nulli %u, PES in ritardo %u\n", (unsigned)mux.stats_video,
-               (unsigned)mux.stats_audio, (unsigned)mux.stats_null, (unsigned)mux.late);
+        printf("TSDUMP fine: video %u audio %u nulli %u, PES in ritardo %u\n", (unsigned)mux->stats_video,
+               (unsigned)mux->stats_audio, (unsigned)mux->stats_null, (unsigned)mux->late);
+        free(mux);
+        free(agen);
 
     } else if (!strcasecmp(argv[0], "CAMDUMP") || !strcasecmp(argv[0], "PIPDUMP") || !strcasecmp(argv[0], "IMGDUMP")) {
         /* <modo>DUMP <pacchetti>: TS di un modo dal vivo con la configurazione attuale, senza RF */
