@@ -23,6 +23,7 @@ compiler, no Arduino IDE and no ESP-IDF**.
 
 - Board: ESP32-S3 **N16R8** (16 MB flash, 8 MB PSRAM) with OV3660 camera. The tested board has two USB-C ports:
   **COM** (CH340 USB-serial chip) and **OTG** (native USB). Use **COM** for programming and for the serial console.
+  On some boards the same port is marked **TTL** instead of COM.
 - A USB-C **data** cable (some cables only charge).
 - The RF output usually leaves the factory on the **printed antenna**, not on the IPEX connector: see
   [ANTENNA_IPEX.md](ANTENNA_IPEX.md) before connecting a filter or measuring power.
@@ -45,7 +46,7 @@ Images in the release:
 ## 1. Browser installer
 
 1. Open **https://photoluis.github.io/Esp32s3-cam-pdx-datv-beacon/** with Chrome or Edge (desktop).
-2. Connect the board to the COM port, click **Install**, choose the port, confirm.
+2. Connect the board to the COM (TTL) port, click **Install**, choose the port, confirm.
 3. First installation: tick *Erase device*. Update: leave it unticked.
 4. Press **RST** at the end and go to [First set-up](#first-set-up).
 
@@ -59,9 +60,13 @@ installed on the computer. Firefox and Safari do not support Web Serial.
 2. Double-click:
    - `1_INSTALL_FULL_erase.bat` for the first installation;
    - `2_UPDATE_firmware_only.bat` to update and keep your settings.
-3. Type the COM port (e.g. `COM3`) or just press Enter for automatic detection.
+3. The script lists the serial ports with their Windows names (e.g. `USB-SERIAL CH340 (COM29)`). Type the port
+   (`COM29` or just `29`), or press Enter: the script then checks each port with esptool (read only) and uses the one
+   with an ESP32-S3. Other ESP32 boards on the PC (e.g. an ESP32-C3) are skipped. With more than one ESP32-S3 it asks
+   which one to program. It works with any USB-serial chip (CH340, CP210x) and with native USB.
 
-The package contains Espressif's `esptool.exe` (GPL-2.0), the two images and the scripts. Windows SmartScreen may ask
+The package contains Espressif's `esptool.exe` (GPL-2.0), the two images and the scripts (`find_port.ps1` chooses
+the port; it runs in Windows PowerShell, which every Windows 10/11 has). Windows SmartScreen may ask
 for confirmation the first time (*More info → Run anyway*).
 
 ## 3. Python + esptool
